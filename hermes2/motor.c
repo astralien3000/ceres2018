@@ -19,7 +19,7 @@ int motor_init(motor_t * motor, const motor_pwm_dev_cfg_t * dev_config, const mo
 }
 
 void motor_set(motor_t * motor, int cmd) {
-  const int acmd = abs(cmd);
+  int acmd = abs(cmd);
 
   if(acmd > motor->config.pwm.max) {
     acmd = motor->config.pwm.max;
