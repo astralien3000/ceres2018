@@ -3,6 +3,8 @@
 
 #include "periph/qdec.h"
 
+#include "scheduler.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -12,23 +14,24 @@ typedef struct {
   qdec_mode_t mode;
   uint32_t ppr;
   float radius;
+  uint32_t freq;
 } encoder_cfg_t;
 
 typedef struct {
-  int value;
-  uint32_t date;
-} encoder_measure_t;
-
-typedef struct {
   qdec_t dev;
-  float coef;
+  float dist_coef;
+  float speed_coef;
+  int32_t last;
+  float speed;
 } encoder_t;
 
-int encoder_init(encoder_t * enc, const encoder_cfg_t * config);
+int encoder_init(encoder_t * enc, scheduler_t * sched, const encoder_cfg_t * config);
 
 void encoder_reset(encoder_t * enc);
 
-float encoder_read(encoder_t * enc);
+float encoder_read_distance(encoder_t * enc);
+
+float encoder_read_speed(encoder_t * enc);
 
 #ifdef __cplusplus
 }

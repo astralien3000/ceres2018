@@ -46,12 +46,14 @@ encoder_cfg_t encs_cfg[] = {
     .mode = QDEC_X4,
     .ppr = 4096,
     .radius = 3, // cm
+    .freq = 100,
   },
   {
     .dev = 2,
     .mode = QDEC_X4,
     .ppr = 4096,
     .radius = 3, // cm
+    .freq = 100,
   },
 };
 
@@ -59,10 +61,6 @@ void _callback(const void* v_msg)
 {
   const ceres2018_msgs__msg__Encoders* msg = v_msg;
   printf("motors: [%i;%i]\n", (int)msg->left, (int)msg->right);
-}
-
-void _test(void * arg) {
-  printf("Hello %i !\n", (int)arg);
 }
 
 scheduler_t sched;
@@ -73,17 +71,13 @@ encoder_t lenc, renc;
 
 int main(int argc, char* argv[])
 {
+  scheduler_init(&sched, tasks, 8);
+
   motor_init(&lmot, &mots_pwm, &mots_cfg[0]);
   motor_init(&rmot, &mots_pwm, &mots_cfg[1]);
 
-  encoder_init(&lenc, &encs_cfg[0]);
-  encoder_init(&renc, &encs_cfg[1]);
-
-  scheduler_init(&sched, tasks, 8);
-
-  scheduler_add_task(&sched, 1, _test, 1);
-  scheduler_add_task(&sched, 10, _test, 10);
-  scheduler_add_task(&sched, 100, _test, 100);
+  encoder_init(&lenc, &sched, &encs_cfg[0]);
+  encoder_init(&renc, &sched, &encs_cfg[1]);
 
   /*
   rclc_init(0, NULL);
@@ -96,8 +90,8 @@ int main(int argc, char* argv[])
 
   //while (rclc_ok()) {
   while (1) {
-    float p1 = encoder_read(&lenc);
-    float p2 = encoder_read(&renc);
+    float p1 = encoder_read_speed(&lenc);
+    float p2 = encoder_read_speed(&renc);
 
     motor_set(&lmot, p1);
     motor_set(&rmot, p2);
@@ -105,7 +99,7 @@ int main(int argc, char* argv[])
     char * buff[128];
     int size = 0;
 
-    //printf("encoders: [%f;%f]\n", p1, p2);
+    printf("encoders: [%f;%f]\n", p1, p2);
 
     xtimer_usleep(10000);
     /*
