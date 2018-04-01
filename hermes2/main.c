@@ -2,7 +2,6 @@
 
 #include <ceres2018_msgs/msg/encoders.h>
 
-#include "usb_serial.h"
 #include <xtimer.h>
 
 #include <stdio.h>
@@ -63,24 +62,28 @@ void _callback(const void* v_msg)
 }
 
 void _test(void * arg) {
-  usb_serial_write("Hello!\n", sizeof("Hello!\n"));
+  printf("Hello %i !\n", (int)arg);
 }
+
+scheduler_t sched;
+scheduler_task_t tasks[8];
+
+motor_t lmot, rmot;
+encoder_t lenc, renc;
 
 int main(int argc, char* argv[])
 {
-  motor_t lmot, rmot;
   motor_init(&lmot, &mots_pwm, &mots_cfg[0]);
   motor_init(&rmot, &mots_pwm, &mots_cfg[1]);
 
-  encoder_t lenc, renc;
   encoder_init(&lenc, &encs_cfg[0]);
   encoder_init(&renc, &encs_cfg[1]);
 
-  //scheduler_t sched;
-  //scheduler_task_t tasks[8];
-  //scheduler_init(&sched, tasks, sizeof(tasks));
+  scheduler_init(&sched, tasks, 8);
 
-  //scheduler_add_task(&sched, 1, _test, 0);
+  scheduler_add_task(&sched, 1, _test, 1);
+  scheduler_add_task(&sched, 10, _test, 10);
+  scheduler_add_task(&sched, 100, _test, 100);
 
   /*
   rclc_init(0, NULL);
@@ -102,8 +105,7 @@ int main(int argc, char* argv[])
     char * buff[128];
     int size = 0;
 
-    size = snprintf(buff, sizeof(buff), "encoders: [%f;%f]\n", p1, p2);
-    usb_serial_write(buff, size);
+    //printf("encoders: [%f;%f]\n", p1, p2);
 
     xtimer_usleep(10000);
     /*
