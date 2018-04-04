@@ -11,6 +11,11 @@
 #include "encoder.h"
 #include "scheduler.h"
 
+#include "odometer.h"
+
+#define __BSD_VISIBLE 1
+#include <math.h>
+
 motor_pwm_dev_cfg_t mots_pwm = {
   .dev = PWM_DEV(0),
   .freq = 30000u,
@@ -24,8 +29,8 @@ motor_cfg_t mots_cfg[] = {
       .max = 150,
     },
     .dir = {
-      .pos_pin = GPIO_PIN(PORT_A, 4),
-      .neg_pin = GPIO_PIN(PORT_A, 5),
+      .pos_pin = GPIO_PIN(PORT_A, 5),
+      .neg_pin = GPIO_PIN(PORT_A, 4),
     }
   },
   {
@@ -46,6 +51,7 @@ encoder_cfg_t encs_cfg[] = {
     .mode = QDEC_X4,
     .ppr = 4096,
     .radius = 3, // cm
+    .invert = false,
     .freq = 100,
   },
   {
@@ -53,8 +59,13 @@ encoder_cfg_t encs_cfg[] = {
     .mode = QDEC_X4,
     .ppr = 4096,
     .radius = 3, // cm
+    .invert = true,
     .freq = 100,
   },
+};
+
+odometer_cfg_t odo_cfg = {
+  .wheels_distance = 11,
 };
 
 void _callback(const void* v_msg)
@@ -69,6 +80,8 @@ scheduler_task_t tasks[8];
 motor_t lmot, rmot;
 encoder_t lenc, renc;
 
+odometer_t odo;
+
 int main(int argc, char* argv[])
 {
   scheduler_init(&sched, tasks, 8);
@@ -78,6 +91,8 @@ int main(int argc, char* argv[])
 
   encoder_init(&lenc, &sched, &encs_cfg[0]);
   encoder_init(&renc, &sched, &encs_cfg[1]);
+
+  odometer_init(&odo, &lenc, &renc, &odo_cfg);
 
   /*
   rclc_init(0, NULL);
@@ -90,11 +105,16 @@ int main(int argc, char* argv[])
 
   //while (rclc_ok()) {
   while (1) {
-    float p1 = encoder_read_speed(&lenc);
-    float p2 = encoder_read_speed(&renc);
+    /*
+    float p1 = encoder_read_distance(&lenc);
+    float p2 = encoder_read_distance(&renc);
+    /*/
+    float p1 = odometer_read_distance(&odo);
+    float p2 = odometer_read_angle(&odo) * 180 / M_PI;
+    //*/
 
-    motor_set(&lmot, p1);
-    motor_set(&rmot, p2);
+    motor_set(&lmot, 80);
+    motor_set(&rmot, 80);
 
     char * buff[128];
     int size = 0;

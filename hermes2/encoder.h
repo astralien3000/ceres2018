@@ -14,6 +14,7 @@ typedef struct {
   qdec_mode_t mode;
   uint32_t ppr;
   float radius;
+  bool invert;
   uint32_t freq;
 } encoder_cfg_t;
 

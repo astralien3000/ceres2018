@@ -17,6 +17,7 @@ int encoder_init(encoder_t * enc, scheduler_t *sched, const encoder_cfg_t * conf
 
   enc->dev = config->dev;
   enc->dist_coef = (M_PI * 2 * config->radius) / config->ppr;
+  enc->dist_coef *= (config->invert ? -1 : 1);
   enc->speed_coef = config->freq * enc->dist_coef;
   enc->last = 0;
 
