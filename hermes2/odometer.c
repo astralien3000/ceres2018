@@ -11,6 +11,8 @@ int odometer_init(odometer_t * odo, encoder_t * encoder_left, encoder_t * encode
 
   odo->distance_offset = 0;
   odo->angle_offset = 0;
+
+  return 0;
 }
 
 void odometer_reset(odometer_t * odo);

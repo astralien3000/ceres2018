@@ -5,6 +5,8 @@ int differential_init(differential_t * diff, motor_t * motor_left, motor_t * mot
   diff->motor_right = motor_right;
   diff->speed = 0;
   diff->angular = 0;
+
+  return 0;
 }
 
 static inline _update(differential_t * diff) {

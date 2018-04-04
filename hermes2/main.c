@@ -13,6 +13,7 @@
 
 #include "odometer.h"
 #include "differential.h"
+#include "locator.h"
 
 #define __BSD_VISIBLE 1
 #include <math.h>
@@ -69,6 +70,10 @@ odometer_cfg_t odo_cfg = {
   .wheels_distance = 11,
 };
 
+locator_cfg_t loc_cfg = {
+  .freq = 100,
+};
+
 void _callback(const void* v_msg)
 {
   const ceres2018_msgs__msg__Encoders* msg = v_msg;
@@ -83,6 +88,7 @@ encoder_t lenc, renc;
 
 odometer_t odo;
 differential_t diff;
+locator_t loc;
 
 int main(int argc, char* argv[])
 {
@@ -97,6 +103,8 @@ int main(int argc, char* argv[])
   odometer_init(&odo, &lenc, &renc, &odo_cfg);
 
   differential_init(&diff, &lmot, &rmot);
+
+  locator_init(&loc, &sched, &odo, &loc_cfg);
 
   /*
   rclc_init(0, NULL);
@@ -121,13 +129,14 @@ int main(int argc, char* argv[])
     motor_set(&lmot, 80);
     motor_set(&rmot, 80);
     */
-    differential_set_speed(&diff, -p1 * 10);
-    differential_set_angular(&diff, -p2);
+    //differential_set_speed(&diff, -p1 * 10);
+    //differential_set_angular(&diff, -p2);
 
     char * buff[128];
     int size = 0;
 
-    printf("encoders: [%f;%f]\n", p1, p2);
+    //printf("encoders: [%f;%f]\n", p1, p2);
+    printf("position: [%f;%f]\n", locator_read_x(&loc), locator_read_y(&loc));
 
     xtimer_usleep(10000);
     /*
