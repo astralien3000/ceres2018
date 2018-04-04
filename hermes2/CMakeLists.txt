@@ -16,6 +16,8 @@ set(sources
   speed_motor.h
   odometer.h
   odometer.c
+  differential.h
+  differential.c
   )
 
 riot_add_config(ceres2018 "FEATURES_REQUIRED += periph_pwm")

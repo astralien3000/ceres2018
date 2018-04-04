@@ -12,6 +12,7 @@
 #include "scheduler.h"
 
 #include "odometer.h"
+#include "differential.h"
 
 #define __BSD_VISIBLE 1
 #include <math.h>
@@ -81,6 +82,7 @@ motor_t lmot, rmot;
 encoder_t lenc, renc;
 
 odometer_t odo;
+differential_t diff;
 
 int main(int argc, char* argv[])
 {
@@ -93,6 +95,8 @@ int main(int argc, char* argv[])
   encoder_init(&renc, &sched, &encs_cfg[1]);
 
   odometer_init(&odo, &lenc, &renc, &odo_cfg);
+
+  differential_init(&diff, &lmot, &rmot);
 
   /*
   rclc_init(0, NULL);
@@ -113,8 +117,12 @@ int main(int argc, char* argv[])
     float p2 = odometer_read_angle(&odo) * 180 / M_PI;
     //*/
 
+    /*
     motor_set(&lmot, 80);
     motor_set(&rmot, 80);
+    */
+    differential_set_speed(&diff, -p1 * 10);
+    differential_set_angular(&diff, -p2);
 
     char * buff[128];
     int size = 0;
