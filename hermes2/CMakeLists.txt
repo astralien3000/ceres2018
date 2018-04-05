@@ -20,6 +20,10 @@ set(sources
   differential.c
   locator.h
   locator.c
+  pid.h
+  pid.c
+  control_system.h
+  control_system.c
   )
 
 riot_add_config(ceres2018 "FEATURES_REQUIRED += periph_pwm")

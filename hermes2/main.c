@@ -15,8 +15,15 @@
 #include "differential.h"
 #include "locator.h"
 
+#include "pid.h"
+#include "control_system.h"
+
 #define __BSD_VISIBLE 1
 #include <math.h>
+
+enum {
+  LEFT, RIGHT, SPEED, ANGLE
+};
 
 motor_pwm_dev_cfg_t mots_pwm = {
   .dev = PWM_DEV(0),
@@ -25,7 +32,7 @@ motor_pwm_dev_cfg_t mots_pwm = {
 };
 
 motor_cfg_t mots_cfg[] = {
-  {
+  [LEFT] = {
     .pwm = {
       .chan = 0,
       .max = 150,
@@ -35,7 +42,7 @@ motor_cfg_t mots_cfg[] = {
       .neg_pin = GPIO_PIN(PORT_A, 4),
     }
   },
-  {
+  [RIGHT] = {
     .pwm = {
       .chan = 1,
       .max = 150,
@@ -48,7 +55,7 @@ motor_cfg_t mots_cfg[] = {
 };
 
 encoder_cfg_t encs_cfg[] = {
-  {
+  [LEFT] = {
     .dev = 1,
     .mode = QDEC_X4,
     .ppr = 4096,
@@ -56,7 +63,7 @@ encoder_cfg_t encs_cfg[] = {
     .invert = false,
     .freq = 100,
   },
-  {
+  [RIGHT] = {
     .dev = 2,
     .mode = QDEC_X4,
     .ppr = 4096,
@@ -72,6 +79,21 @@ odometer_cfg_t odo_cfg = {
 
 locator_cfg_t loc_cfg = {
   .freq = 100,
+};
+
+pid_cfg_t pid_cfgs[] = {
+  [LEFT] = {
+    .kp = 1,
+    .ki = 0,
+    .kd = 0,
+    .freq = 100,
+  },
+  [RIGHT] = {
+    .kp = 1,
+    .ki = 0,
+    .kd = 0,
+    .freq = 100,
+  },
 };
 
 void _callback(const void* v_msg)
@@ -90,21 +112,61 @@ odometer_t odo;
 differential_t diff;
 locator_t loc;
 
+pid_filter_t lpid, rpid;
+control_system_t lcs, rcs;
+
 int main(int argc, char* argv[])
 {
   scheduler_init(&sched, tasks, 8);
 
-  motor_init(&lmot, &mots_pwm, &mots_cfg[0]);
-  motor_init(&rmot, &mots_pwm, &mots_cfg[1]);
+  motor_init(&lmot, &mots_pwm, &mots_cfg[LEFT]);
+  motor_init(&rmot, &mots_pwm, &mots_cfg[RIGHT]);
 
-  encoder_init(&lenc, &sched, &encs_cfg[0]);
-  encoder_init(&renc, &sched, &encs_cfg[1]);
+  encoder_init(&lenc, &sched, &encs_cfg[LEFT]);
+  encoder_init(&renc, &sched, &encs_cfg[RIGHT]);
 
   odometer_init(&odo, &lenc, &renc, &odo_cfg);
 
   differential_init(&diff, &lmot, &rmot);
 
   locator_init(&loc, &sched, &odo, &loc_cfg);
+
+  pid_init(&lpid, &pid_cfgs[LEFT]);
+  pid_init(&rpid, &pid_cfgs[RIGHT]);
+
+  {
+    control_system_cfg_t cfg = {
+      .freq = 100,
+
+      .error_filter = &lpid,
+      .error_filter_eval = pid_eval,
+
+      .sensor = &lenc,
+      .sensor_read = encoder_read_speed,
+
+      .actuator = &lmot,
+      .actuator_set = motor_set,
+    };
+
+    control_system_init(&lcs, &sched, &cfg);
+  }
+
+  {
+    control_system_cfg_t cfg = {
+      .freq = 100,
+
+      .error_filter = &rpid,
+      .error_filter_eval = pid_eval,
+
+      .sensor = &renc,
+      .sensor_read = encoder_read_speed,
+
+      .actuator = &rmot,
+      .actuator_set = motor_set,
+    };
+
+    control_system_init(&rcs, &sched, &cfg);
+  }
 
   /*
   rclc_init(0, NULL);
