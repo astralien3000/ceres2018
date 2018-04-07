@@ -36,7 +36,8 @@ typedef struct {
 
 int motor_init(motor_t * motor, const motor_pwm_dev_cfg_t * dev_config, const motor_cfg_t * config);
 
-void motor_set(motor_t * motor, int cmd);
+void motor_set_int(motor_t * motor, int cmd);
+void motor_set(motor_t * motor, float cmd);
 
 #ifdef __cplusplus
 }

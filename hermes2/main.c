@@ -25,9 +25,14 @@ enum {
   LEFT, RIGHT, SPEED, ANGLE
 };
 
+#define ENC_FREQ (400)
+#define MOT_CS_FREQ (400)
+
+#define MOT_MAX (80)
+
 motor_pwm_dev_cfg_t mots_pwm = {
   .dev = PWM_DEV(0),
-  .freq = 30000u,
+  .freq = 40000u,
   .res = 256
 };
 
@@ -35,7 +40,7 @@ motor_cfg_t mots_cfg[] = {
   [LEFT] = {
     .pwm = {
       .chan = 0,
-      .max = 150,
+      .max = MOT_MAX,
     },
     .dir = {
       .pos_pin = GPIO_PIN(PORT_A, 5),
@@ -45,7 +50,7 @@ motor_cfg_t mots_cfg[] = {
   [RIGHT] = {
     .pwm = {
       .chan = 1,
-      .max = 150,
+      .max = MOT_MAX,
     },
     .dir = {
       .pos_pin = GPIO_PIN(PORT_E, 0),
@@ -61,7 +66,7 @@ encoder_cfg_t encs_cfg[] = {
     .ppr = 4096,
     .radius = 3, // cm
     .invert = false,
-    .freq = 100,
+    .freq = ENC_FREQ,
   },
   [RIGHT] = {
     .dev = 2,
@@ -69,7 +74,7 @@ encoder_cfg_t encs_cfg[] = {
     .ppr = 4096,
     .radius = 3, // cm
     .invert = true,
-    .freq = 100,
+    .freq = ENC_FREQ,
   },
 };
 
@@ -78,21 +83,22 @@ odometer_cfg_t odo_cfg = {
 };
 
 locator_cfg_t loc_cfg = {
-  .freq = 100,
+  .freq = 50,
 };
+
 
 pid_cfg_t pid_cfgs[] = {
   [LEFT] = {
-    .kp = 1,
-    .ki = 0,
+    .kp = 8,
+    .ki = 2,
     .kd = 0,
-    .freq = 100,
+    .freq = MOT_CS_FREQ,
   },
   [RIGHT] = {
-    .kp = 1,
-    .ki = 0,
+    .kp = 8,
+    .ki = 2,
     .kd = 0,
-    .freq = 100,
+    .freq = MOT_CS_FREQ,
   },
 };
 
@@ -127,16 +133,24 @@ int main(int argc, char* argv[])
 
   odometer_init(&odo, &lenc, &renc, &odo_cfg);
 
-  differential_init(&diff, &lmot, &rmot);
-
   locator_init(&loc, &sched, &odo, &loc_cfg);
 
   pid_init(&lpid, &pid_cfgs[LEFT]);
   pid_init(&rpid, &pid_cfgs[RIGHT]);
 
   {
+    differential_cfg_t cfg = {
+      .left_motor = &lcs,
+      .left_motor_set = control_system_set,
+      .right_motor = &rcs,
+      .right_motor_set = control_system_set,
+    };
+    differential_init(&diff, &cfg);
+  }
+
+  {
     control_system_cfg_t cfg = {
-      .freq = 100,
+      .freq = MOT_CS_FREQ,
 
       .error_filter = &lpid,
       .error_filter_eval = pid_eval,
@@ -153,7 +167,7 @@ int main(int argc, char* argv[])
 
   {
     control_system_cfg_t cfg = {
-      .freq = 100,
+      .freq = MOT_CS_FREQ,
 
       .error_filter = &rpid,
       .error_filter_eval = pid_eval,
@@ -180,27 +194,29 @@ int main(int argc, char* argv[])
   //while (rclc_ok()) {
   while (1) {
     /*
-    float p1 = encoder_read_distance(&lenc);
-    float p2 = encoder_read_distance(&renc);
+    float p1 = encoder_read_speed(&lenc);
+    float p2 = encoder_read_speed(&renc);
     /*/
     float p1 = odometer_read_distance(&odo);
-    float p2 = odometer_read_angle(&odo) * 180 / M_PI;
+    float p2 = odometer_read_angle(&odo);
     //*/
 
-    /*
-    motor_set(&lmot, 80);
-    motor_set(&rmot, 80);
-    */
-    //differential_set_speed(&diff, -p1 * 10);
-    //differential_set_angular(&diff, -p2);
+    //motor_set(&lmot, p1);
+    //motor_set(&rmot, p2);
 
-    char * buff[128];
-    int size = 0;
+    //differential_set_linear(&diff, 10);
+    differential_set_angular(&diff, 3.1415);
 
-    //printf("encoders: [%f;%f]\n", p1, p2);
-    printf("position: [%f;%f]\n", locator_read_x(&loc), locator_read_y(&loc));
+    //char * buff[128];
+    //int size = 0;
 
-    xtimer_usleep(10000);
+    //control_system_set(&lcs, 100);
+    //control_system_set(&rcs, 100);
+
+    printf("%u;%f;%f\n", (unsigned long)xtimer_now_usec(),p1, p2);
+    //printf("position: [%f;%f]\n", locator_read_x(&loc), locator_read_y(&loc));
+
+    xtimer_usleep(1000000 / 100);
     /*
     msg.left = p1;
     msg.right = p2;

@@ -18,7 +18,7 @@ int motor_init(motor_t * motor, const motor_pwm_dev_cfg_t * dev_config, const mo
   return 0;
 }
 
-void motor_set(motor_t * motor, int cmd) {
+void motor_set_int(motor_t * motor, int cmd) {
   int acmd = abs(cmd);
 
   if(acmd > motor->config.pwm.max) {
@@ -29,4 +29,8 @@ void motor_set(motor_t * motor, int cmd) {
 
   gpio_set(cmd > 0 ? motor->config.dir.pos_pin : motor->config.dir.neg_pin);
   gpio_clear(cmd > 0 ? motor->config.dir.neg_pin : motor->config.dir.pos_pin);
+}
+
+void motor_set(motor_t * motor, float cmd) {
+  motor_set_int(motor, (int)cmd);
 }

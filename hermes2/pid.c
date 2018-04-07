@@ -1,5 +1,9 @@
 #include "pid.h"
 
+
+#define ENABLE_DEBUG 0
+#include "debug.h"
+
 int pid_init(pid_filter_t * pid, const pid_cfg_t * config) {
   pid->config = *config;
   pid->last = 0;
@@ -23,8 +27,10 @@ float pid_eval(pid_filter_t * pid, float val) {
       pid->config.ki * sum +
       pid->config.kd * diff;
 
-  pid->sum = sum;
+  pid->sum = sum * 0.75;
   pid->last = val;
+
+  DEBUG("pid : %f %f\n", val, ret);
 
   return ret;
 }

@@ -1,5 +1,8 @@
 #include "control_system.h"
 
+#define ENABLE_DEBUG 0
+#include "debug.h"
+
 static void _update(void * arg) {
   control_system_t * cs = (control_system_t*) arg;
 
@@ -20,6 +23,7 @@ static void _update(void * arg) {
     error = cs->config.error_filter_eval(cs->config.error_filter, error);
   }
 
+  DEBUG("error : %f\n", error);
   cs->config.actuator_set(cs->config.actuator, error);
 }
 

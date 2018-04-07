@@ -1,21 +1,24 @@
 #include "differential.h"
 
-int differential_init(differential_t * diff, motor_t * motor_left, motor_t * motor_right) {
-  diff->motor_left = motor_left;
-  diff->motor_right = motor_right;
-  diff->speed = 0;
+int differential_init(differential_t * diff, const differential_cfg_t * config) {
+  if(!config->left_motor_set || !config->right_motor_set) {
+    return -1;
+  }
+
+  diff->config = *config;
+  diff->linear = 0;
   diff->angular = 0;
 
   return 0;
 }
 
 static inline _update(differential_t * diff) {
-  motor_set(diff->motor_left, (int)(diff->speed - diff->angular));
-  motor_set(diff->motor_right, (int)(diff->speed + diff->angular));
+  diff->config.left_motor_set(diff->config.left_motor, (int)(diff->linear - diff->angular));
+  diff->config.right_motor_set(diff->config.right_motor, (int)(diff->linear + diff->angular));
 }
 
-void differential_set_speed(differential_t * diff, float cmd) {
-  diff->speed = cmd;
+void differential_set_linear(differential_t * diff, float cmd) {
+  diff->linear = cmd;
   _update(diff);
 }
 
