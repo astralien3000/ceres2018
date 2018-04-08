@@ -3,7 +3,7 @@
 #include <xtimer.h>
 #include <thread.h>
 
-#define ENABLE_DEBUG 1
+#define ENABLE_DEBUG 0
 #include "debug.h"
 
 static uint32_t _gcd(uint32_t a, uint32_t b) {
@@ -20,7 +20,7 @@ static void * _thread(void * arg) {
   scheduler_t * sched = (scheduler_t *)arg;
   while(1) {
     xtimer_periodic_wakeup(&sched->last_wakeup, sched->period);
-    //DEBUG("sched !");
+    DEBUG("scheduler !\n");
     for(size_t i = 0 ; i < sched->max ; i++) {
       scheduler_task_t * task = &sched->tasks[i];
 

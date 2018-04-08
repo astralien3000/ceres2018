@@ -23,7 +23,7 @@ float odometer_read_distance(odometer_t * odo) {
   return odo->distance_offset + (dist_right + dist_left) / 2;
 }
 
-float odometer_read_speed(odometer_t * odo) {
+float odometer_read_linear_speed(odometer_t * odo) {
   const float speed_left = encoder_read_speed(odo->encoder_left);
   const float speed_right = encoder_read_speed(odo->encoder_right);
   return (speed_right + speed_left) / 2;
@@ -33,4 +33,10 @@ float odometer_read_angle(odometer_t * odo) {
   const float dist_left = encoder_read_distance(odo->encoder_left);
   const float dist_right = encoder_read_distance(odo->encoder_right);
   return odo->angle_offset + (dist_right - dist_left) / odo->config.wheels_distance;
+}
+
+float odometer_read_angular_speed(odometer_t * odo) {
+  const float speed_left = encoder_read_speed(odo->encoder_left);
+  const float speed_right = encoder_read_speed(odo->encoder_right);
+  return (speed_right - speed_left) / odo->config.wheels_distance;
 }

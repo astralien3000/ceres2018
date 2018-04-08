@@ -22,13 +22,14 @@
 #include <math.h>
 
 enum {
-  LEFT, RIGHT, SPEED, ANGLE
+  LEFT, RIGHT, ANGLE
 };
 
-#define ENC_FREQ (400)
-#define MOT_CS_FREQ (400)
+#define ENC_FREQ (200)
+#define MOT_CS_FREQ (200)
+#define ROBOT_CS_FREQ (50)
 
-#define MOT_MAX (80)
+#define MOT_MAX (50)
 
 motor_pwm_dev_cfg_t mots_pwm = {
   .dev = PWM_DEV(0),
@@ -79,7 +80,8 @@ encoder_cfg_t encs_cfg[] = {
 };
 
 odometer_cfg_t odo_cfg = {
-  .wheels_distance = 11,
+  //.wheels_distance = 11,
+  .wheels_distance = 11.16,
 };
 
 locator_cfg_t loc_cfg = {
@@ -99,6 +101,12 @@ pid_cfg_t pid_cfgs[] = {
     .ki = 2,
     .kd = 0,
     .freq = MOT_CS_FREQ,
+  },
+  [ANGLE] = {
+    .kp = 32,
+    .ki = 50,
+    .kd = 0,
+    .freq = ROBOT_CS_FREQ,
   },
 };
 
@@ -121,6 +129,9 @@ locator_t loc;
 pid_filter_t lpid, rpid;
 control_system_t lcs, rcs;
 
+pid_filter_t apid;
+control_system_t acs;
+
 int main(int argc, char* argv[])
 {
   scheduler_init(&sched, tasks, 8);
@@ -138,6 +149,9 @@ int main(int argc, char* argv[])
   pid_init(&lpid, &pid_cfgs[LEFT]);
   pid_init(&rpid, &pid_cfgs[RIGHT]);
 
+  pid_init(&apid, &pid_cfgs[ANGLE]);
+  apid.sum_coeff = 9.0/10.0;
+
   {
     differential_cfg_t cfg = {
       .left_motor = &lcs,
@@ -151,6 +165,9 @@ int main(int argc, char* argv[])
   {
     control_system_cfg_t cfg = {
       .freq = MOT_CS_FREQ,
+
+      .feedback_filter_eval = 0,
+      .command_filter_eval = 0,
 
       .error_filter = &lpid,
       .error_filter_eval = pid_eval,
@@ -169,6 +186,9 @@ int main(int argc, char* argv[])
     control_system_cfg_t cfg = {
       .freq = MOT_CS_FREQ,
 
+      .feedback_filter_eval = 0,
+      .command_filter_eval = 0,
+
       .error_filter = &rpid,
       .error_filter_eval = pid_eval,
 
@@ -180,6 +200,27 @@ int main(int argc, char* argv[])
     };
 
     control_system_init(&rcs, &sched, &cfg);
+  }
+
+
+  {
+    control_system_cfg_t cfg = {
+      .freq = ROBOT_CS_FREQ,
+
+      .feedback_filter_eval = 0,
+      .command_filter_eval = 0,
+
+      .error_filter = &apid,
+      .error_filter_eval = pid_eval,
+
+      .sensor = &odo,
+      .sensor_read = odometer_read_angle,
+
+      .actuator = &diff,
+      .actuator_set = differential_set_angular,
+    };
+
+    control_system_init(&acs, &sched, &cfg);
   }
 
   /*
@@ -197,23 +238,24 @@ int main(int argc, char* argv[])
     float p1 = encoder_read_speed(&lenc);
     float p2 = encoder_read_speed(&renc);
     /*/
-    float p1 = odometer_read_distance(&odo);
-    float p2 = odometer_read_angle(&odo);
+    float p1 = odometer_read_angle(&odo);
+    float p2 = odometer_read_angular_speed(&odo);
     //*/
 
     //motor_set(&lmot, p1);
     //motor_set(&rmot, p2);
 
-    //differential_set_linear(&diff, 10);
-    differential_set_angular(&diff, 3.1415);
-
+    //differential_set_linear(&diff, 0);
+    //differential_set_angular(&diff, (M_PI * 2.0 / 10.0) * 11.0);
     //char * buff[128];
     //int size = 0;
 
-    //control_system_set(&lcs, 100);
-    //control_system_set(&rcs, 100);
+    //control_system_set(&lcs, -10);
+    //control_system_set(&rcs, 10);
 
-    printf("%u;%f;%f\n", (unsigned long)xtimer_now_usec(),p1, p2);
+    control_system_set(&acs, 0);
+
+    printf("%f;%f\n", p1, p2);
     //printf("position: [%f;%f]\n", locator_read_x(&loc), locator_read_y(&loc));
 
     xtimer_usleep(1000000 / 100);

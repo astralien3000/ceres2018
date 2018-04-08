@@ -13,8 +13,8 @@ int differential_init(differential_t * diff, const differential_cfg_t * config) 
 }
 
 static inline _update(differential_t * diff) {
-  diff->config.left_motor_set(diff->config.left_motor, (int)(diff->linear - diff->angular));
-  diff->config.right_motor_set(diff->config.right_motor, (int)(diff->linear + diff->angular));
+  diff->config.left_motor_set(diff->config.left_motor, (int)(diff->linear + diff->angular));
+  diff->config.right_motor_set(diff->config.right_motor, (int)(diff->linear - diff->angular));
 }
 
 void differential_set_linear(differential_t * diff, float cmd) {

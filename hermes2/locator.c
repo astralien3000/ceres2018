@@ -6,7 +6,7 @@
 void _update(void * arg) {
   locator_t * loc = (locator_t *)arg;
   const float angle = odometer_read_angle(loc->odo);
-  const float speed = odometer_read_speed(loc->odo) / loc->config.freq;
+  const float speed = odometer_read_linear_speed(loc->odo) / loc->config.freq;
 
   loc->x += cosf(angle) * speed;
   loc->y += sinf(angle) * speed;

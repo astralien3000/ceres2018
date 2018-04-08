@@ -14,6 +14,7 @@ typedef struct {
   pid_cfg_t config;
   float last;
   float sum;
+  float sum_coeff;
 } pid_filter_t;
 
 int pid_init(pid_filter_t * pid, const pid_cfg_t * config);

@@ -25,9 +25,11 @@ void odometer_reset(odometer_t * odo);
 
 float odometer_read_distance(odometer_t * odo);
 
-float odometer_read_speed(odometer_t * odo);
+float odometer_read_linear_speed(odometer_t * odo);
 
 float odometer_read_angle(odometer_t * odo);
+
+float odometer_read_angular_speed(odometer_t * odo);
 
 #ifdef __cplusplus
 }
