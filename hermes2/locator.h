@@ -25,6 +25,7 @@ void locator_reset(locator_t * loc);
 
 float locator_read_x(locator_t * loc);
 float locator_read_y(locator_t * loc);
+float locator_read_angle(locator_t * loc);
 
 #ifdef __cplusplus
 }

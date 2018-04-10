@@ -33,3 +33,7 @@ float locator_read_x(locator_t * loc) {
 float locator_read_y(locator_t * loc) {
   return loc->y;
 }
+
+float locator_read_angle(locator_t * loc) {
+  return odometer_read_angle(loc->odo);
+}

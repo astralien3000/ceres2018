@@ -24,6 +24,8 @@ set(sources
   pid.c
   control_system.h
   control_system.c
+  trajectory_manager.h
+  trajectory_manager.c
   )
 
 riot_add_config(ceres2018 "FEATURES_REQUIRED += periph_pwm")

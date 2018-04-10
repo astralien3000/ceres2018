@@ -18,6 +18,8 @@
 #include "pid.h"
 #include "control_system.h"
 
+#include "trajectory_manager.h"
+
 #define __BSD_VISIBLE 1
 #include <math.h>
 
@@ -88,7 +90,6 @@ locator_cfg_t loc_cfg = {
   .freq = 50,
 };
 
-
 pid_cfg_t pid_cfgs[] = {
   [LEFT] = {
     .kp = 8,
@@ -131,6 +132,8 @@ control_system_t lcs, rcs;
 
 pid_filter_t apid;
 control_system_t acs;
+
+trajectory_manager_t traj;
 
 int main(int argc, char* argv[])
 {
@@ -202,7 +205,6 @@ int main(int argc, char* argv[])
     control_system_init(&rcs, &sched, &cfg);
   }
 
-
   {
     control_system_cfg_t cfg = {
       .freq = ROBOT_CS_FREQ,
@@ -223,6 +225,23 @@ int main(int argc, char* argv[])
     control_system_init(&acs, &sched, &cfg);
   }
 
+  {
+    trajectory_manager_cfg_t cfg = {
+      .loc = &loc,
+
+      .linear_speed = &diff,
+      .linear_speed_set = differential_set_linear,
+
+      .angle = &acs,
+      .angle_set = control_system_set,
+
+      .freq = 10,
+      .speed = 10,
+    };
+
+    trajectory_manager_init(&traj, &sched, &cfg);
+  }
+
   /*
   rclc_init(0, NULL);
   rclc_node_t* node = rclc_create_node("encoders", "");
@@ -234,13 +253,8 @@ int main(int argc, char* argv[])
 
   //while (rclc_ok()) {
   while (1) {
-    /*
-    float p1 = encoder_read_speed(&lenc);
-    float p2 = encoder_read_speed(&renc);
-    /*/
-    float p1 = odometer_read_angle(&odo);
-    float p2 = odometer_read_angular_speed(&odo);
-    //*/
+    float p1 = locator_read_x(&loc);
+    float p2 = locator_read_y(&loc);
 
     //motor_set(&lmot, p1);
     //motor_set(&rmot, p2);
@@ -253,7 +267,9 @@ int main(int argc, char* argv[])
     //control_system_set(&lcs, -10);
     //control_system_set(&rcs, 10);
 
-    control_system_set(&acs, 0);
+    //control_system_set(&acs, 0);
+
+    trajectory_manager_goto(&traj, 0, 0);
 
     printf("%f;%f\n", p1, p2);
     //printf("position: [%f;%f]\n", locator_read_x(&loc), locator_read_y(&loc));
