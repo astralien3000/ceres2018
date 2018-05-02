@@ -24,7 +24,12 @@ int locator_init(locator_t * loc, scheduler_t * sched, odometer_t * odo, const l
   return 0;
 }
 
-void locator_reset(locator_t * loc);
+void locator_reset(locator_t * loc, float x, float y, float angle) {
+  odometer_reset(loc->odo, 0, angle);
+
+  loc->x = x;
+  loc->y = y;
+}
 
 float locator_read_x(locator_t * loc) {
   return loc->x;

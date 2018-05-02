@@ -15,7 +15,15 @@ int odometer_init(odometer_t * odo, encoder_t * encoder_left, encoder_t * encode
   return 0;
 }
 
-void odometer_reset(odometer_t * odo);
+void odometer_reset(odometer_t * odo, float dist, float angle) {
+  encoder_reset(odo->encoder_left);
+  encoder_reset(odo->encoder_right);
+
+  const float dist_left = encoder_read_distance(odo->encoder_left);
+  const float dist_right = encoder_read_distance(odo->encoder_right);
+  odo->distance_offset = dist - (dist_right + dist_left) / 2;
+  odo->angle_offset  = angle - (dist_right - dist_left) / odo->config.wheels_distance;
+}
 
 float odometer_read_distance(odometer_t * odo) {
   const float dist_left = encoder_read_distance(odo->encoder_left);

@@ -33,7 +33,7 @@ enum {
 #define MOT_CS_FREQ (200)
 #define ROBOT_CS_FREQ (50)
 
-#define MOT_MAX (80)
+#define MOT_MAX (60)
 
 motor_pwm_dev_cfg_t mots_pwm = {
   .dev = PWM_DEV(0),
@@ -84,15 +84,14 @@ encoder_cfg_t encs_cfg[] = {
 };
 
 secure_motor_cfg_t smot_cfg = {
-    .duration = 0.5,
+    .duration = 1,
     .freq = 10,
     .min_cmd = 5,
     .max_speed = 1,
 };
 
 odometer_cfg_t odo_cfg = {
-  //.wheels_distance = 11,
-  .wheels_distance = 11.16,
+  .wheels_distance = 11.16, //11
 };
 
 locator_cfg_t loc_cfg = {
@@ -119,12 +118,6 @@ pid_cfg_t pid_cfgs[] = {
     .freq = ROBOT_CS_FREQ,
   },
 };
-
-void _callback(const void* v_msg)
-{
-  const ceres2018_msgs__msg__Encoders* msg = v_msg;
-  printf("motors: [%i;%i]\n", (int)msg->left, (int)msg->right);
-}
 
 #define MAX_TASKS 16
 
@@ -251,60 +244,26 @@ int main(int argc, char* argv[])
       .angle = &acs,
       .angle_set = control_system_set,
 
-      .freq = 10,
-      .speed = 20,
+      .freq = 20,
+      .speed = 10,
     };
 
     trajectory_manager_init(&traj, &sched, &cfg);
   }
 
-  /*
-  rclc_init(0, NULL);
-  rclc_node_t* node = rclc_create_node("encoders", "");
-  rclc_publisher_t* pub = rclc_create_publisher(node, RCLC_GET_MSG_TYPE_SUPPORT(ceres2018_msgs, msg, Encoders), "encoders", 1);
-  rclc_subscription_t* sub = rclc_create_subscription(node, RCLC_GET_MSG_TYPE_SUPPORT(ceres2018_msgs, msg, Encoders), "motors", _callback, 1, false);
+  locator_reset(&loc, 0, -10, M_PI/2);
+  control_system_set(&acs, M_PI/2);
 
-  ceres2018_msgs__msg__Encoders msg;
-  */
-
-  //while (rclc_ok()) {
   while (1) {
     float p1 = locator_read_x(&loc);
     float p2 = locator_read_y(&loc);
 
-    //motor_set(&lmot, p1);
-    //motor_set(&rmot, p2);
+    trajectory_manager_goto(&traj, 0, 0);
 
-    //differential_set_linear(&diff, 0);
-    //differential_set_angular(&diff, (M_PI * 2.0 / 10.0) * 11.0);
-    //char * buff[128];
-    //int size = 0;
-
-    //control_system_set(&lcs, -10);
-    //control_system_set(&rcs, 10);
-
-    //control_system_set(&acs, 0);
-
-    trajectory_manager_goto(&traj, 10, 0);
-
-    //printf("%f;%f\n", p1, p2);
-    //printf("position: [%f;%f]\n", locator_read_x(&loc), locator_read_y(&loc));
+    printf("%f;%f\n", p1, p2);
 
     xtimer_usleep(1000000 / 100);
-    /*
-    msg.left = p1;
-    msg.right = p2;
-    printf("encoders: [%i;%i]\n", (int)msg.left, (int)msg.right);
-    
-    rclc_publish(pub, (const void*)&msg);
-
-    rclc_spin_node_once(node, 1000/20);
-    */
   }
 
-  /*
-  rclc_destroy_publisher(pub);
-  rclc_destroy_node(node);
-  */
   return 0;
 }

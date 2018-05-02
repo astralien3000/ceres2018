@@ -21,7 +21,7 @@ typedef struct {
 
 int odometer_init(odometer_t * odo, encoder_t * encoder_left, encoder_t * encoder_right, const odometer_cfg_t * config);
 
-void odometer_reset(odometer_t * odo);
+void odometer_reset(odometer_t * odo, float dist, float angle);
 
 float odometer_read_distance(odometer_t * odo);
 
