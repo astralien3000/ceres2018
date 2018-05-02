@@ -9,7 +9,7 @@ static bool _locked = false;
 
 static void _update(void * arg) {
   secure_motor_t * smot = (secure_motor_t*)arg;
-  const float spe = encoder_read_speed(smot->encoder);
+  const float spe = -encoder_read_speed(smot->encoder);
 
   if(smot->cmd * spe < 0) {
     smot->counter += 1.0/smot->config.freq;
@@ -45,11 +45,11 @@ int secure_motor_init(secure_motor_t * smot, scheduler_t * sched, motor_t * moto
   scheduler_add_task(sched, config->freq, _update, smot);
 }
 
-void secure_motor_set_locked(secure_motor_t * odo, bool lock) {
+void secure_motor_set_locked(bool lock) {
   _locked = lock;
 }
 
-bool secure_motor_is_locked(secure_motor_t * odo) {
+bool secure_motor_is_locked(void) {
   return _locked;
 }
 

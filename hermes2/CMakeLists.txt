@@ -27,6 +27,11 @@ set(sources
   trajectory_manager.c
   secure_motor.h
   secure_motor.c
+
+  dev.h
+
+  positioning_action.c
+  positioning_action.h
   )
 
 riot_add_config(ceres2018 "FEATURES_REQUIRED += periph_pwm")

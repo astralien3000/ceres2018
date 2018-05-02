@@ -22,6 +22,7 @@ typedef struct {
 int locator_init(locator_t * loc, scheduler_t * sched, odometer_t * odo, const locator_cfg_t * config);
 
 void locator_reset(locator_t * loc, float x, float y, float angle);
+void locator_reset_pos(locator_t * loc, float x, float y);
 
 float locator_read_x(locator_t * loc);
 float locator_read_y(locator_t * loc);

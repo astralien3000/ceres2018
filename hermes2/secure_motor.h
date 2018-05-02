@@ -26,9 +26,9 @@ typedef struct {
 
 int secure_motor_init(secure_motor_t * smot, scheduler_t * sched, motor_t * motor, encoder_t * encoder, const secure_motor_cfg_t * config);
 
-void secure_motor_set_locked(secure_motor_t * odo, bool lock);
+void secure_motor_set_locked(bool lock);
 
-bool secure_motor_is_locked(secure_motor_t * odo);
+bool secure_motor_is_locked(void);
 
 void secure_motor_set(secure_motor_t * smot, float cmd);
 

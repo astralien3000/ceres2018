@@ -22,6 +22,8 @@
 
 #include "trajectory_manager.h"
 
+#include "positioning_action.h"
+
 #define __BSD_VISIBLE 1
 #include <math.h>
 
@@ -84,9 +86,9 @@ encoder_cfg_t encs_cfg[] = {
 };
 
 secure_motor_cfg_t smot_cfg = {
-    .duration = 1,
+    .duration = 0.5,
     .freq = 10,
-    .min_cmd = 5,
+    .min_cmd = 10,
     .max_speed = 1,
 };
 
@@ -251,14 +253,23 @@ int main(int argc, char* argv[])
     trajectory_manager_init(&traj, &sched, &cfg);
   }
 
-  locator_reset(&loc, 0, -10, M_PI/2);
-  control_system_set(&acs, M_PI/2);
+  locator_reset(&loc, 20, 20, 0);
+  control_system_set(&acs, 0);
+
+  positioning_action_cfg_t pos_act_cfg = {
+    .pos = { .x =  20, .y =  20 },
+    .dir = { .x = -10, .y = 10 },
+  };
+
+  positioning_action_t pos_act;
+  positioning_action_init(&pos_act, &pos_act_cfg);
 
   while (1) {
     float p1 = locator_read_x(&loc);
     float p2 = locator_read_y(&loc);
 
-    trajectory_manager_goto(&traj, 0, 0);
+    //trajectory_manager_goto(&traj, 0, 0);
+    positioning_action_update(&pos_act);
 
     printf("%f;%f\n", p1, p2);
 

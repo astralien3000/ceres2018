@@ -12,7 +12,8 @@ static void _update(void * arg) {
   float dx = traj->cmd_x - locator_read_x(traj->config.loc);
   float dy = traj->cmd_y - locator_read_y(traj->config.loc);
 
-  if(fabs(dx) < 0.5 && fabs(dy) < 0.5) {
+  traj->arrived = fabs(dx) < 0.5 && fabs(dy) < 0.5;
+  if(traj->arrived) {
     traj->config.linear_speed_set(traj->config.linear_speed, 0);
     return;
   }
@@ -50,6 +51,9 @@ static void _update(void * arg) {
 
 int trajectory_manager_init(trajectory_manager_t * traj, scheduler_t * sched, const trajectory_manager_cfg_t * config) {
   traj->config = *config;
+  traj->cmd_x = locator_read_x(config->loc);
+  traj->cmd_y = locator_read_y(config->loc);
+  traj->arrived = false;
 
   scheduler_add_task(sched, config->freq, _update, traj);
 }
@@ -57,4 +61,8 @@ int trajectory_manager_init(trajectory_manager_t * traj, scheduler_t * sched, co
 void trajectory_manager_goto(trajectory_manager_t * traj, float x, float y) {
   traj->cmd_x = x;
   traj->cmd_y = y;
+}
+
+bool trajectory_manager_is_arrived(trajectory_manager_t * traj) {
+  return traj->arrived;
 }

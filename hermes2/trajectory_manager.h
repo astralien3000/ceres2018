@@ -27,11 +27,14 @@ typedef struct {
   trajectory_manager_cfg_t config;
   float cmd_x;
   float cmd_y;
+  bool arrived;
 } trajectory_manager_t;
 
 int trajectory_manager_init(trajectory_manager_t * traj, scheduler_t * sched, const trajectory_manager_cfg_t * config);
 
 void trajectory_manager_goto(trajectory_manager_t * traj, float x, float y);
+
+bool trajectory_manager_is_arrived(trajectory_manager_t * traj);
 
 #ifdef __cplusplus
 }
