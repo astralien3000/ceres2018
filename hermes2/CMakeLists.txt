@@ -13,7 +13,6 @@ set(sources
   encoder.c
   scheduler.h
   scheduler.c
-  speed_motor.h
   odometer.h
   odometer.c
   differential.h
@@ -26,6 +25,8 @@ set(sources
   control_system.c
   trajectory_manager.h
   trajectory_manager.c
+  secure_motor.h
+  secure_motor.c
   )
 
 riot_add_config(ceres2018 "FEATURES_REQUIRED += periph_pwm")

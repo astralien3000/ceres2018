@@ -11,6 +11,8 @@
 #include "encoder.h"
 #include "scheduler.h"
 
+#include "secure_motor.h"
+
 #include "odometer.h"
 #include "differential.h"
 #include "locator.h"
@@ -31,7 +33,7 @@ enum {
 #define MOT_CS_FREQ (200)
 #define ROBOT_CS_FREQ (50)
 
-#define MOT_MAX (50)
+#define MOT_MAX (80)
 
 motor_pwm_dev_cfg_t mots_pwm = {
   .dev = PWM_DEV(0),
@@ -81,6 +83,13 @@ encoder_cfg_t encs_cfg[] = {
   },
 };
 
+secure_motor_cfg_t smot_cfg = {
+    .duration = 0.5,
+    .freq = 10,
+    .min_cmd = 5,
+    .max_speed = 1,
+};
+
 odometer_cfg_t odo_cfg = {
   //.wheels_distance = 11,
   .wheels_distance = 11.16,
@@ -92,14 +101,14 @@ locator_cfg_t loc_cfg = {
 
 pid_cfg_t pid_cfgs[] = {
   [LEFT] = {
-    .kp = 8,
-    .ki = 2,
+    .kp = 6,
+    .ki = 1,
     .kd = 0,
     .freq = MOT_CS_FREQ,
   },
   [RIGHT] = {
-    .kp = 8,
-    .ki = 2,
+    .kp = 6,
+    .ki = 1,
     .kd = 0,
     .freq = MOT_CS_FREQ,
   },
@@ -117,11 +126,15 @@ void _callback(const void* v_msg)
   printf("motors: [%i;%i]\n", (int)msg->left, (int)msg->right);
 }
 
+#define MAX_TASKS 16
+
 scheduler_t sched;
-scheduler_task_t tasks[8];
+scheduler_task_t tasks[MAX_TASKS];
 
 motor_t lmot, rmot;
 encoder_t lenc, renc;
+
+secure_motor_t lsmot, rsmot;
 
 odometer_t odo;
 differential_t diff;
@@ -137,13 +150,16 @@ trajectory_manager_t traj;
 
 int main(int argc, char* argv[])
 {
-  scheduler_init(&sched, tasks, 8);
+  scheduler_init(&sched, tasks, MAX_TASKS);
 
   motor_init(&lmot, &mots_pwm, &mots_cfg[LEFT]);
   motor_init(&rmot, &mots_pwm, &mots_cfg[RIGHT]);
 
   encoder_init(&lenc, &sched, &encs_cfg[LEFT]);
   encoder_init(&renc, &sched, &encs_cfg[RIGHT]);
+
+  secure_motor_init(&lsmot, &sched, &lmot, &lenc, &smot_cfg);
+  secure_motor_init(&rsmot, &sched, &rmot, &renc, &smot_cfg);
 
   odometer_init(&odo, &lenc, &renc, &odo_cfg);
 
@@ -178,8 +194,8 @@ int main(int argc, char* argv[])
       .sensor = &lenc,
       .sensor_read = encoder_read_speed,
 
-      .actuator = &lmot,
-      .actuator_set = motor_set,
+      .actuator = &lsmot,
+      .actuator_set = secure_motor_set,
     };
 
     control_system_init(&lcs, &sched, &cfg);
@@ -198,8 +214,8 @@ int main(int argc, char* argv[])
       .sensor = &renc,
       .sensor_read = encoder_read_speed,
 
-      .actuator = &rmot,
-      .actuator_set = motor_set,
+      .actuator = &rsmot,
+      .actuator_set = secure_motor_set,
     };
 
     control_system_init(&rcs, &sched, &cfg);
@@ -236,7 +252,7 @@ int main(int argc, char* argv[])
       .angle_set = control_system_set,
 
       .freq = 10,
-      .speed = 10,
+      .speed = 20,
     };
 
     trajectory_manager_init(&traj, &sched, &cfg);
@@ -269,9 +285,9 @@ int main(int argc, char* argv[])
 
     //control_system_set(&acs, 0);
 
-    trajectory_manager_goto(&traj, 0, 0);
+    trajectory_manager_goto(&traj, 10, 0);
 
-    printf("%f;%f\n", p1, p2);
+    //printf("%f;%f\n", p1, p2);
     //printf("position: [%f;%f]\n", locator_read_x(&loc), locator_read_y(&loc));
 
     xtimer_usleep(1000000 / 100);
