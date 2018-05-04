@@ -5,6 +5,8 @@
 #define ENABLE_DEBUG 1
 #include <debug.h>
 
+#define ROBOT_BORDER_LENGTH (18.2/2.0)
+
 int positioning_action_init(positioning_action_t * act, const positioning_action_cfg_t * config) {
   act->config = *config;
   act->internal = 0;
@@ -27,7 +29,7 @@ void positioning_action_update(positioning_action_t * act) {
       trajectory_manager_goto(&traj, act->config.pos.x + act->config.dir.x * 2, act->config.pos.y);
       if(secure_motor_is_locked()) {
         act->internal = 1;
-        locator_reset_pos(&loc, act->config.pos.x + act->config.dir.x, act->config.pos.y);
+        locator_reset_pos(&loc, act->config.pos.x + act->config.dir.x, locator_read_y(&loc));
       }
     }
     else if(act->internal == 1) {
@@ -46,7 +48,7 @@ void positioning_action_update(positioning_action_t * act) {
       trajectory_manager_goto(&traj, act->config.pos.x, act->config.pos.y + act->config.dir.y * 2);
       if(secure_motor_is_locked()) {
         act->internal = 3;
-        locator_reset_pos(&loc, act->config.pos.x, act->config.pos.y + act->config.dir.y);
+        locator_reset_pos(&loc, locator_read_x(&loc), act->config.pos.y + act->config.dir.y);
       }
     }
     else if(act->internal == 3) {

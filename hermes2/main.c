@@ -24,6 +24,9 @@
 
 #include "positioning_action.h"
 
+#include "pull.h"
+#include "side.h"
+
 #define __BSD_VISIBLE 1
 #include <math.h>
 
@@ -32,10 +35,10 @@ enum {
 };
 
 #define ENC_FREQ (200)
-#define MOT_CS_FREQ (200)
+#define MOT_CS_FREQ (800)
 #define ROBOT_CS_FREQ (50)
 
-#define MOT_MAX (60)
+#define MOT_MAX (100)
 
 motor_pwm_dev_cfg_t mots_pwm = {
   .dev = PWM_DEV(0),
@@ -102,15 +105,15 @@ locator_cfg_t loc_cfg = {
 
 pid_cfg_t pid_cfgs[] = {
   [LEFT] = {
-    .kp = 6,
+    .kp = 4,
     .ki = 1,
-    .kd = 0,
+    .kd = 1,
     .freq = MOT_CS_FREQ,
   },
   [RIGHT] = {
-    .kp = 6,
+    .kp = 4,
     .ki = 1,
-    .kd = 0,
+    .kd = 1,
     .freq = MOT_CS_FREQ,
   },
   [ANGLE] = {
@@ -247,7 +250,7 @@ int main(int argc, char* argv[])
       .angle_set = control_system_set,
 
       .freq = 20,
-      .speed = 10,
+      .speed = 20,
     };
 
     trajectory_manager_init(&traj, &sched, &cfg);
@@ -264,14 +267,28 @@ int main(int argc, char* argv[])
   positioning_action_t pos_act;
   positioning_action_init(&pos_act, &pos_act_cfg);
 
+  pull_init();
+  side_init();
+
   while (1) {
-    float p1 = locator_read_x(&loc);
-    float p2 = locator_read_y(&loc);
+    //float p1 = locator_read_x(&loc);
+    //float p2 = locator_read_y(&loc);
+
+    float p1 = encoder_read_speed(&lenc);
+    float p2 = encoder_read_speed(&renc);
+
+    //differential_set_linear(&diff, 20);
 
     //trajectory_manager_goto(&traj, 0, 0);
     positioning_action_update(&pos_act);
 
-    printf("%f;%f\n", p1, p2);
+    //printf("%f;%f\n", p1, p2);
+    if(side_read() == GREEN) {
+      printf("GREEN\n");
+    }
+    else {
+      printf("ORANGE\n");
+    }
 
     xtimer_usleep(1000000 / 100);
   }

@@ -28,6 +28,9 @@ set(sources
   secure_motor.h
   secure_motor.c
 
+  pull.h
+  side.h
+
   dev.h
 
   positioning_action.c
