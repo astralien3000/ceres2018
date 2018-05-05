@@ -1,3 +1,40 @@
+#include "control_layer_3.hpp"
+#include "pull.h"
+#include "side.h"
+
+#include "positioning_action.h"
+
+int main(void) {
+  Serial.begin(115200);
+  ControlLayer0::instance().init();
+  ControlLayer1::instance().init();
+  ControlLayer2::instance().init();
+  ControlLayer3::instance().init();
+
+  Pull::init();
+  Side::init();
+
+  PositioningAction pos_act;
+  pos_act.config.pos.x = 0;
+  pos_act.config.pos.y = 0;
+  pos_act.config.dir.x = -10;
+  pos_act.config.dir.y = 10;
+  pos_act.init();
+
+  while(1) {
+    if(!Pull::isPresent()) {
+      pos_act.update();
+    }
+
+    Serial.print(ControlLayer3::instance().loc.getX());
+    Serial.print(" ");
+    Serial.print(ControlLayer3::instance().loc.getY());
+    Serial.println("");
+    delay(100);
+  }
+}
+
+#if 0
 #include <rclc/rclc.h>
 
 #include <ceres2018_msgs/msg/encoders.h>
@@ -7,9 +44,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "motor.h"
-#include "encoder.h"
-#include "scheduler.h"
+#include "motor.hpp"
+#include "encoder.hpp"
+#include "scheduler.hpp"
 
 #include "secure_motor.h"
 
@@ -295,3 +332,4 @@ int main(int argc, char* argv[])
 
   return 0;
 }
+#endif

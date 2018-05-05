@@ -1,34 +1,92 @@
 #ifndef POSITIONING_ACTION_H
 #define POSITIONING_ACTION_H
 
-#include "trajectory_manager.h"
+#include "control_layer_3.hpp"
 
-typedef enum {
-  START,
-  RUN,
-  STOP,
-  FAIL,
-  FINISH,
-} action_state_t;
+class PositioningAction {
+public:
+  static constexpr float ROBOT_BORDER_LENGTH = 18.2/2.0;
 
-typedef struct {
-  float x;
-  float y;
-} xy_pos_t;
+  typedef enum {
+    START,
+    RUN,
+    STOP,
+    FAIL,
+    FINISH,
+  } State;
 
-typedef struct {
-  xy_pos_t pos;
-  xy_pos_t dir;
-} positioning_action_cfg_t;
+  typedef struct {
+    float x;
+    float y;
+  } Pos;
 
-typedef struct {
-  positioning_action_cfg_t config;
-  action_state_t state;
-  int internal;
-} positioning_action_t;
+  typedef struct {
+    Pos pos;
+    Pos dir;
+  } Config;
 
-int positioning_action_init(positioning_action_t * act, const positioning_action_cfg_t * config);
+  Config config;
+private:
+    State state;
+    int internal;
 
-void positioning_action_update(positioning_action_t * act);
+public:
+  int init(void) {
+    internal = 0;
+    state = START;
+    return 0;
+  }
+
+  void update(void) {
+    if(state == START) {
+       ControlLayer3::instance().traj.gotoXY(config.pos.x, config.pos.y);
+      if(ControlLayer3::instance().traj.isArrived()) {
+        state = RUN;
+        internal = 0;
+      }
+    }
+    else if(state == RUN) {
+      if(internal == 0) {
+        if(config.dir.x == 0) {
+          internal = 2;
+        }
+        ControlLayer3::instance().traj.gotoXY(config.pos.x + config.dir.x * 2, config.pos.y);
+        if(SecureMotor::locked()) {
+          internal = 1;
+          ControlLayer3::instance().loc.resetPos(config.pos.x + config.dir.x, ControlLayer3::instance().loc.getY());
+        }
+      }
+      else if(internal == 1) {
+        ControlLayer3::instance().traj.gotoXY(config.pos.x, config.pos.y);
+        if(ControlLayer3::instance().traj.isArrived()) {
+          internal = 2;
+        }
+        else if(SecureMotor::locked()) {
+          SecureMotor::locked() = false;
+        }
+      }
+      else if(internal == 2) {
+        if(config.dir.y == 0) {
+          internal = 4;
+        }
+        ControlLayer3::instance().traj.gotoXY(config.pos.x, config.pos.y + config.dir.y * 2);
+        if(SecureMotor::locked()) {
+          internal = 3;
+          ControlLayer3::instance().loc.resetPos(ControlLayer3::instance().loc.getX(), config.pos.y + config.dir.y);
+        }
+      }
+      else if(internal == 3) {
+        ControlLayer3::instance().traj.gotoXY(config.pos.x, config.pos.y);
+        if(ControlLayer3::instance().traj.isArrived()) {
+          internal = 4;
+        }
+        else if(SecureMotor::locked()) {
+          SecureMotor::locked() = false;
+        }
+      }
+    }
+  }
+
+};
 
 #endif//POSITIONING_ACTION_H

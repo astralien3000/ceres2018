@@ -1,16 +1,17 @@
 #ifndef PULL_H
 #define PULL_H
 
-#include <periph/gpio.h>
+#include <Arduino.h>
 
-#define PULL_PIN GPIO_PIN(PORT_D, 0)
+struct Pull {
+  static int init(void) {
+    pinMode(2, INPUT);
+    return 0;
+  }
 
-int pull_init(void) {
-  gpio_init(PULL_PIN, GPIO_IN);
-}
-
-bool pull_is_present(void) {
-  return !gpio_read(PULL_PIN);
-}
+  static bool isPresent(void) {
+    return !digitalRead(2);
+  }
+};
 
 #endif//PULL_H

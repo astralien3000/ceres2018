@@ -1,23 +1,25 @@
 #ifndef SIDE_H
 #define SIDE_H
 
-#include <periph/gpio.h>
+#include <Arduino.h>
 
-#define SIDE_PIN GPIO_PIN(PORT_D, 7)
+struct Side {
 
-typedef enum {
-  GREEN, ORANGE
-} side_t;
+  enum Color {
+    GREEN, ORANGE
+  };
 
-int side_init(void) {
-  gpio_init(SIDE_PIN, GPIO_IN);
-}
-
-side_t side_read(void) {
-  if(gpio_read(SIDE_PIN)) {
-    return GREEN;
+  static int init(void) {
+    pinMode(5, INPUT);
   }
-  return ORANGE;
-}
+
+  static Color get(void) {
+    if(digitalRead(5)) {
+      return GREEN;
+    }
+    return ORANGE;
+  }
+
+};
 
 #endif//SIDE_H

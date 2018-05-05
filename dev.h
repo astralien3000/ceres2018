@@ -1,15 +1,15 @@
 #ifndef DEV_H
 #define DEV_H
 
-#include "scheduler.h"
-#include "motor.h"
-#include "encoder.h"
-#include "secure_motor.h"
-#include "odometer.h"
-#include "differential.h"
-#include "locator.h"
+#include "scheduler.hpp"
+#include "motor.hpp"
+#include "encoder.hpp"
+#include "secure_motor.hpp"
+#include "odometer.hpp"
+#include "differential.hpp"
+#include "locator.hpp"
 #include "control_system.h"
-#include "pid.h"
+#include "pid.hpp"
 #include "trajectory_manager.h"
 
 extern scheduler_t sched;
