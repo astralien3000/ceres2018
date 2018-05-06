@@ -1,0 +1,8 @@
+*.o
+*.d
+*.creator
+*.files
+*.includes
+*.config
+*.autosave
+*.user
