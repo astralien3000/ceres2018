@@ -53,7 +53,7 @@ public:
         ControlLayer3::instance().traj.gotoXY(config.pos.x + config.dir.x * 2, config.pos.y);
         if(SecureMotor::locked()) {
           internal = 1;
-          ControlLayer3::instance().loc.resetPos(config.pos.x + config.dir.x, ControlLayer3::instance().loc.getY());
+          ControlLayer3::instance().loc.reset(config.pos.x + config.dir.x, ControlLayer3::instance().loc.getY(), 0);
         }
       }
       else if(internal == 1) {

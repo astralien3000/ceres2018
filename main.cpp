@@ -4,6 +4,10 @@
 
 #include "positioning_action.h"
 
+#include <feetech/sc.hpp>
+
+#include "gp2.hpp"
+
 int main(void) {
   Serial.begin(115200);
   ControlLayer0::instance().init();

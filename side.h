@@ -11,6 +11,7 @@ struct Side {
 
   static int init(void) {
     pinMode(5, INPUT);
+    return 0;
   }
 
   static Color get(void) {
