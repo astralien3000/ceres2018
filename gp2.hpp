@@ -4,6 +4,7 @@
 #include <Arduino.h>
 
 class GP2 {
+public:
   enum Id {
     FRONT_LEFT,
     FRONT_RIGHT,
@@ -13,10 +14,12 @@ class GP2 {
     MAX_GP2
   };
 
+private:
   static constexpr uint8_t pins[MAX_GP2] = {
     A19, A18, A16, A7
   };
 
+public:
   static int init(void) {
     for(int i = 0 ; i < MAX_GP2 ; i++) {
       pinMode(pins[i], INPUT);
@@ -27,7 +30,6 @@ class GP2 {
   static uint32_t get(Id id) {
     return analogRead(pins[id]);
   }
-
 };
 
 #endif//GP2_HPP

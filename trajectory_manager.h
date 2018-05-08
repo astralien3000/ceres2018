@@ -11,6 +11,10 @@ private:
   typedef void (*set_t)(void*, float);
 
 public:
+  enum Way {
+    FORWARD, BACKWARD, NONE
+  };
+
   struct Config {
     uint32_t freq;
     float speed;
@@ -29,7 +33,10 @@ private:
 
   float cmd_x;
   float cmd_y;
+  float cmd_a;
+  bool enable_cmd_a;
   bool arrived;
+  Way way;
 
 public:
   template<class LinearSpeed>
@@ -50,7 +57,13 @@ public:
 
     arrived = fabs(dx) < 0.5 && fabs(dy) < 0.5;
     if(arrived) {
+      way = NONE;
       linear_speed_set(linear_speed, 0);
+      cmd_x = loc->getX();
+      cmd_y = loc->getY();
+      if(enable_cmd_a) {
+        angle_set(angle, cmd_a);
+      }
       return;
     }
 
@@ -61,18 +74,21 @@ public:
     if(amod > M_PI)  amod -= 2 * M_PI;
     float adiv = a - amod;
     float speed_mul = config.speed;
+    way = FORWARD;
     //DEBUG("(%f;%f)=>(%f;%f;%f)\n",a,amod, cmd_a-M_PI, cmd_a, cmd_a+M_PI);
 
     if(amod < cmd_a) {
       if(fabs(cmd_a-amod) > fabs(cmd_a - M_PI - amod)) {
         cmd_a -= M_PI;
         speed_mul *= -1;
+        way = BACKWARD;
       }
     }
     else {
       if(fabs(cmd_a-amod) > fabs(cmd_a + M_PI - amod)) {
         cmd_a += M_PI;
         speed_mul *= -1;
+        way = BACKWARD;
       }
     }
     //DEBUG("%f\n", cmd_a);
@@ -89,6 +105,7 @@ public:
     cmd_x = loc->getX();
     cmd_y = loc->getY();
     arrived = false;
+    enable_cmd_a = false;
 
     Scheduler::instance().add(config.freq, this);
 
@@ -98,10 +115,24 @@ public:
   void gotoXY(float x, float y) {
     cmd_x = x;
     cmd_y = y;
+    enable_cmd_a = false;
+    arrived = false;
+  }
+
+  void gotoXYA(float x, float y, float a) {
+    cmd_x = x;
+    cmd_y = y;
+    cmd_a = a;
+    enable_cmd_a = true;
+    arrived = false;
   }
 
   bool isArrived() {
     return arrived;
+  }
+
+  Way getWay() {
+    return way;
   }
 };
 

@@ -39,7 +39,7 @@ public:
 
   void update(void) {
     if(state == START) {
-       ControlLayer3::instance().traj.gotoXY(config.pos.x, config.pos.y);
+       ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y, 0);
       if(ControlLayer3::instance().traj.isArrived()) {
         state = RUN;
         internal = 0;
@@ -50,14 +50,14 @@ public:
         if(config.dir.x == 0) {
           internal = 2;
         }
-        ControlLayer3::instance().traj.gotoXY(config.pos.x + config.dir.x * 2, config.pos.y);
+        ControlLayer3::instance().traj.gotoXYA(config.pos.x + config.dir.x * 2, config.pos.y, 0);
         if(SecureMotor::locked()) {
           internal = 1;
           ControlLayer3::instance().loc.reset(config.pos.x + config.dir.x, ControlLayer3::instance().loc.getY(), 0);
         }
       }
       else if(internal == 1) {
-        ControlLayer3::instance().traj.gotoXY(config.pos.x, config.pos.y);
+        ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y, M_PI/2);
         if(ControlLayer3::instance().traj.isArrived()) {
           internal = 2;
         }
@@ -69,14 +69,14 @@ public:
         if(config.dir.y == 0) {
           internal = 4;
         }
-        ControlLayer3::instance().traj.gotoXY(config.pos.x, config.pos.y + config.dir.y * 2);
+        ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y + config.dir.y * 2, M_PI/2);
         if(SecureMotor::locked()) {
           internal = 3;
           ControlLayer3::instance().loc.resetPos(ControlLayer3::instance().loc.getX(), config.pos.y + config.dir.y);
         }
       }
       else if(internal == 3) {
-        ControlLayer3::instance().traj.gotoXY(config.pos.x, config.pos.y);
+        ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y, 0);
         if(ControlLayer3::instance().traj.isArrived()) {
           internal = 4;
         }

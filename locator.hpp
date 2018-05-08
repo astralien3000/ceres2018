@@ -15,21 +15,21 @@ public:
   Odometer * odo;
 
 private:
-  float x;
-  float y;
+  float _x;
+  float _y;
 
 public:
   void update(void) {
     const float angle = odo->getAngle();
     const float speed = odo->getLinearSpeed() / config.freq;
 
-    x += cosf(angle) * speed;
-    y += sinf(angle) * speed;
+    _x += cosf(angle) * speed;
+    _y += sinf(angle) * speed;
   }
 
   int init(void) {
-    x = 0;
-    y = 0;
+    _x = 0;
+    _y = 0;
 
     Scheduler::instance().add(config.freq, this);
 
@@ -37,8 +37,8 @@ public:
   }
 
   void resetPos(float x, float y) {
-    x = x;
-    y = y;
+    _x = x;
+    _y = y;
   }
 
   void reset(float x, float y, float angle) {
@@ -47,11 +47,11 @@ public:
   }
 
   float getX() {
-    return x;
+    return _x;
   }
 
   float getY() {
-    return y;
+    return _y;
   }
 
   float getAngle() {

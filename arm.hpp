@@ -42,8 +42,10 @@ private:
   class Grip;
 
 public:
+  void safe(void);
   void deploy(void);
   void retract(void);
+  void bee(void);
 
 public:
   void setAngles(float a1, float a2);
@@ -71,8 +73,10 @@ private:
   class Grip;
 
 public:
+  void safe(void);
   void deploy(void);
   void retract(void);
+  void bee(void);
 
 public:
   void setAngles(float a1, float a2);

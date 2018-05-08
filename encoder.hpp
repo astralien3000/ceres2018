@@ -8,7 +8,7 @@
 #include "scheduler.hpp"
 
 class Encoder {
-private:
+public:
   static inline QuadDecode<1>& qdec1(void) {
     static QuadDecode<1> ret;
     return ret;
