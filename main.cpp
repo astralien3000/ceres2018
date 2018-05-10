@@ -18,9 +18,11 @@ Side::Color match_side = Side::ORANGE;
 
 inline void gotoXYSymOrange(float x, float y) {
   if(match_side == Side::ORANGE) {
+    Serial.println("ORANGE XY");
     ControlLayer3::instance().traj.gotoXY(x, y);
   }
   else {
+    Serial.println("GREEN XY");
     ControlLayer3::instance().traj.gotoXY(-x, y);
   }
   while(!ControlLayer3::instance().traj.isArrived());
@@ -28,9 +30,11 @@ inline void gotoXYSymOrange(float x, float y) {
 
 inline void gotoXYSymOrangeSkate(float x, float y) {
   if(match_side == Side::ORANGE) {
+    Serial.println("ORANGE XY SKATE");
     ControlLayer3::instance().traj.gotoXY(x, y);
   }
   else {
+    Serial.println("GREEN XY SKATE");
     ControlLayer3::instance().traj.gotoXY(-x, y);
   }
   while(!ControlLayer3::instance().traj.isArrived() && !SecureMotor::locked());
@@ -39,9 +43,11 @@ inline void gotoXYSymOrangeSkate(float x, float y) {
 
 inline void gotoXYSymOrangeSkateTimeout(float x, float y) {
   if(match_side == Side::ORANGE) {
+    Serial.println("ORANGE XY SKATE TIMEOUT");
     ControlLayer3::instance().traj.gotoXY(x, y);
   }
   else {
+    Serial.println("GREEN XY SKATE TIMEOUT");
     ControlLayer3::instance().traj.gotoXY(-x, y);
   }
 
@@ -54,9 +60,11 @@ inline void gotoXYSymOrangeSkateTimeout(float x, float y) {
 
 inline void gotoXYSymOrangeUnsecure(float x, float y) {
   if(match_side == Side::ORANGE) {
+    Serial.println("ORANGE XY UNSECURE");
     ControlLayer3::instance().traj.gotoXY(x, y);
   }
   else {
+    Serial.println("GREEN XY UNSECURE");
     ControlLayer3::instance().traj.gotoXY(-x, y);
   }
   while(!ControlLayer3::instance().traj.isArrived()) {
@@ -69,11 +77,13 @@ inline void gotoAngleSide(float angle_orange, float angle_green) {
   float x = ControlLayer3::instance().loc.getX();
   float y = ControlLayer3::instance().loc.getY();
   if(match_side == Side::ORANGE) {
+    Serial.println("ORANGE ANGLE");
     const float angle = angle_orange;
     ControlLayer3::instance().traj.gotoXYA(x, y, angle);
     while(fabs(ControlLayer3::instance().loc.getAngle() - angle) > 0.1);
   }
   else {
+    Serial.println("GREEN ANGLE");
     const float angle = angle_green;
     ControlLayer3::instance().traj.gotoXYA(x, y, angle);
     while(fabs(ControlLayer3::instance().loc.getAngle() - angle) > 0.1);
@@ -109,11 +119,13 @@ int main(void) {
 
   // init
   if(Side::get() == Side::ORANGE) {
+    Serial.println("ORANGE INIT");
     match_side = Side::ORANGE;
     ControlLayer3::instance().loc.reset(130, -20, M_PI);
     ControlLayer3::instance().traj.gotoXYA(130, -20, M_PI);
   }
   else {
+    Serial.println("GREEN INIT");
     match_side = Side::GREEN;
     ControlLayer3::instance().loc.reset(-130, -20, 0);
     ControlLayer3::instance().traj.gotoXYA(-130, -20, 0);
@@ -133,6 +145,7 @@ int main(void) {
   delay(500);
 
   if(match_side == Side::ORANGE) {
+    Serial.println("ORANGE INIT POSITION");
     PositioningAction act;
     act.config.pos.x = 150 - 60;
     act.config.pos.y = -20;
@@ -145,6 +158,7 @@ int main(void) {
     }
   }
   else {
+    Serial.println("GREEN INIT POSITION");
     PositioningAction act;
     act.config.pos.x = - 150 + 60;
     act.config.pos.y = -20;
@@ -168,12 +182,12 @@ int main(void) {
   // pannel
   gotoXYSymOrange(187-150, -50);
 
+  gotoAngleSide(M_PI/2, M_PI/2);
+
   Arm::instance().right().safe();
   delay(500);
   Arm::instance().right().pannel();
   delay(500);
-
-  gotoAngleSide(M_PI/2, M_PI/2);
 
   ControlLayer2::instance().speed.disableDetection();
   gotoXYSymOrangeSkateTimeout(187-150, 10);
@@ -181,21 +195,22 @@ int main(void) {
 
   gotoXYSymOrangeUnsecure(187-150, -50);
 
-  Arm::instance().left().safe();
   Arm::instance().right().safe();
   delay(500);
 
-  Arm::instance().left().retract();
   Arm::instance().right().retract();
   delay(500);
 
   // bee
+  gotoXYSymOrange(150-80,-120);
+
   if(match_side == Side::ORANGE) {
+    Serial.println("ORANGE BEE POSITION");
     PositioningAction act;
     act.config.pos.x =  120;
     act.config.pos.y = -170;
     act.config.dir.x =  30 - PositioningAction::ROBOT_BORDER_LENGTH;
-    act.config.dir.y = -30 - PositioningAction::ROBOT_BORDER_LENGTH;
+    act.config.dir.y = -30 + PositioningAction::ROBOT_BORDER_LENGTH;
     act.config.timeout_ms = 5000;
     act.init();
     while(act.getState() != PositioningAction::FINISH) {
@@ -203,11 +218,12 @@ int main(void) {
     }
   }
   else {
+    Serial.println("GREEN BEE POSITION");
     PositioningAction act;
     act.config.pos.x = -120;
     act.config.pos.y = -170;
     act.config.dir.x = -30 + PositioningAction::ROBOT_BORDER_LENGTH;
-    act.config.dir.y = -30 - PositioningAction::ROBOT_BORDER_LENGTH;
+    act.config.dir.y = -30 + PositioningAction::ROBOT_BORDER_LENGTH;
     act.config.timeout_ms = 5000;
     act.init();
     while(act.getState() != PositioningAction::FINISH) {
@@ -232,6 +248,8 @@ int main(void) {
 
   Arm::instance().right().retract();
   delay(500);
+
+  while(1);
 }
 
 // FTM Interrupt Service routines - on overflow and position compare

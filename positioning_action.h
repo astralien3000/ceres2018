@@ -46,8 +46,9 @@ public:
 
   void update(void) {
     if(state == START) {
-      ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y, 0);
-      if(ControlLayer3::instance().traj.isArrived()) {
+      const float angle  = 0;
+      ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y, angle);
+      if(ControlLayer3::instance().traj.isArrived() && fabs(ControlLayer3::instance().loc.getAngle() - angle) > 0.1) {
         state = RUN;
         internal = 0;
         time = millis();
@@ -70,8 +71,9 @@ public:
         }
       }
       else if(internal == 1) {
-        ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y, M_PI/2);
-        if(ControlLayer3::instance().traj.isArrived()) {
+        const float angle = M_PI/2;
+        ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y, angle);
+        if(ControlLayer3::instance().traj.isArrived() && fabs(ControlLayer3::instance().loc.getAngle() - angle) > 0.1) {
           internal = 2;
           time = millis();
         }
@@ -105,6 +107,7 @@ public:
         }
       }
     }
+    Serial.println((int)internal);
   }
 
 };
