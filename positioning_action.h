@@ -27,8 +27,11 @@ public:
 
   Config config;
 private:
-    State state;
-    int internal;
+  State state;
+  int internal;
+
+public:
+  State getState() { return state; }
 
 public:
   int init(void) {
@@ -39,10 +42,11 @@ public:
 
   void update(void) {
     if(state == START) {
-       ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y, 0);
+      ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y, 0);
       if(ControlLayer3::instance().traj.isArrived()) {
         state = RUN;
         internal = 0;
+        ControlLayer2::instance().speed.disableDetection();
       }
     }
     else if(state == RUN) {
@@ -76,9 +80,11 @@ public:
         }
       }
       else if(internal == 3) {
-        ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y, 0);
+        ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y, M_PI/2);
         if(ControlLayer3::instance().traj.isArrived()) {
-          internal = 4;
+          //internal = 4;
+          state = FINISH;
+          ControlLayer2::instance().speed.enableDetection();
         }
         else if(SecureMotor::locked()) {
           SecureMotor::locked() = false;

@@ -34,6 +34,7 @@ typedef enum {
   DEPLOYED_MIDDLE = 1,
   DEPLOYED_DOWN   = 2,
   BEE             = 3,
+  PANNEL          = 4,
 
   MAX_POSES
 } pose_t;
@@ -51,6 +52,7 @@ static uint16_t _left_poses[MAX_POSES][ARM_SERVO_NUMOF] = {
   {512, 512, 600, 270, 130}, // DEPLOYED_MIDDLE
   {512, 512, 100, 700, 130}, // DEPLOYED_DOWN
   {512, 900, 500, 400, 512}, // BEE
+  {100, 900, 500, 400, 512}, // PANNEL
 };
 
 static uint16_t _right_poses[MAX_POSES][ARM_SERVO_NUMOF] = {
@@ -58,6 +60,7 @@ static uint16_t _right_poses[MAX_POSES][ARM_SERVO_NUMOF] = {
   {512, 512, 600, 270, 150}, // DEPLOYED_MIDDLE
   {512, 512, 100, 700, 150}, // DEPLOYED_DOWN
   {512, 900, 500, 400, 512}, // BEE
+  {100, 900, 380, 400, 380}, // PANNEL
 };
 
 static float _left_angles[ARM_SERVO_NUMOF] = { 0,0,0,0,0 };
@@ -137,6 +140,10 @@ void Arm::Right::retract(void) {
 
 void Arm::Right::bee(void) {
   _arm_set_pose(_right_ids, _right_poses[BEE], _no_angles);
+}
+
+void Arm::Right::pannel(void) {
+  _arm_set_pose(_right_ids, _right_poses[PANNEL], _no_angles);
 }
 
 void Arm::Left::setAngles(float a1, float a2) {

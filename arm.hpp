@@ -77,6 +77,7 @@ public:
   void deploy(void);
   void retract(void);
   void bee(void);
+  void pannel(void);
 
 public:
   void setAngles(float a1, float a2);
