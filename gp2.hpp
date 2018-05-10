@@ -15,20 +15,23 @@ public:
   };
 
 private:
-  static constexpr uint8_t pins[MAX_GP2] = {
-    A19, A18, A16, A7
-  };
+  static uint8_t* pins(void) {
+    static uint8_t pins[MAX_GP2] = {
+      A19, A18, A16, A7
+    };
+    return pins;
+  }
 
 public:
   static int init(void) {
     for(int i = 0 ; i < MAX_GP2 ; i++) {
-      pinMode(pins[i], INPUT);
+      pinMode(pins()[i], INPUT);
     }
     return 0;
   }
 
   static uint32_t get(Id id) {
-    return analogRead(pins[id]);
+    return analogRead(pins()[id]);
   }
 };
 

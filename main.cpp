@@ -11,7 +11,8 @@
 #include "arm.hpp"
 #include <feetech/sc.hpp>
 
-constexpr int GP2_LIMIT = 500;
+//constexpr int GP2_LIMIT = 500;
+constexpr int GP2_LIMIT = 300;
 
 int main(void) {
   Serial.begin(115200);
@@ -44,53 +45,89 @@ int main(void) {
   }
   */
 
-  //Orange
-  ControlLayer3::instance().loc.reset(130, -20, M_PI);
-  ControlLayer3::instance().traj.gotoXYA(130, -20, M_PI);
-
-  Arm::instance().left().safe();
-  Arm::instance().right().safe();
-  delay(1000);
-
-  Arm::instance().left().retract();
-  Arm::instance().right().retract();
-  delay(1000);
-
-  //while(!Pull::isPresent());
-  //while(Pull::isPresent());
-
-  ControlLayer3::instance().traj.gotoXY(130, -180);
-  while(!ControlLayer3::instance().traj.isArrived()) {
-    if(ControlLayer3::instance().traj.getWay() == TrajectoryManager::FORWARD) {
-      if(GP2::get(GP2::FRONT_LEFT) > GP2_LIMIT || GP2::get(GP2::FRONT_RIGHT) > GP2_LIMIT) {
-        SecureMotor::locked() = true;
-        Serial.println("LOCKED");
-      }
-      else {
-        SecureMotor::locked() = false;
-      }
-    }
-    else if(ControlLayer3::instance().traj.getWay() == TrajectoryManager::BACKWARD) {
-      if(GP2::get(GP2::BACK_LEFT) > GP2_LIMIT || GP2::get(GP2::BACK_RIGHT) > GP2_LIMIT) {
-        SecureMotor::locked() = true;
-        Serial.println("LOCKED");
-      }
-      else {
-        SecureMotor::locked() = false;
-      }
-    }
+  if(Side::get() == Side::ORANGE) {
+    ControlLayer3::instance().loc.reset(130, -20, M_PI);
+    ControlLayer3::instance().traj.gotoXYA(130, -20, M_PI);
+  }
+  else {
+    ControlLayer3::instance().loc.reset(-130, -20, 0);
+    ControlLayer3::instance().traj.gotoXYA(-130, -20, 0);
   }
 
   Arm::instance().left().safe();
   Arm::instance().right().safe();
+  delay(500);
+
+  Arm::instance().left().retract();
+  Arm::instance().right().retract();
+  delay(500);
+
+  while(!Pull::isPresent());
+  delay(500);
+
+  if(Side::get() == Side::ORANGE) {
+    ControlLayer3::instance().traj.gotoXY(130, -25);
+  }
+  else {
+    ControlLayer3::instance().traj.gotoXY(-130, -25);
+  }
+
+  while(Pull::isPresent());
   delay(1000);
 
-  Arm::instance().left().safe();
+  if(Side::get() == Side::ORANGE) {
+    ControlLayer3::instance().traj.gotoXY(80, -50);
+  }
+  else {
+    ControlLayer3::instance().traj.gotoXY(-80, -50);
+  }
+
+  while(!ControlLayer3::instance().traj.isArrived());
+
+  if(Side::get() == Side::ORANGE) {
+    ControlLayer3::instance().traj.gotoXY(80, -80);
+  }
+  else {
+    ControlLayer3::instance().traj.gotoXY(-80, -80);
+  }
+
+  while(!ControlLayer3::instance().traj.isArrived());
+
+  if(Side::get() == Side::ORANGE) {
+    ControlLayer3::instance().traj.gotoXY(130, -180);
+  }
+  else {
+    ControlLayer3::instance().traj.gotoXY(-130, -180);
+  }
+
+  while(!ControlLayer3::instance().traj.isArrived());
+
+  Arm::instance().right().safe();
+
+  if(Side::get() == Side::ORANGE) {
+    const float angle = -M_PI/2;
+    ControlLayer3::instance().traj.gotoXYA(130, -180, angle);
+    while(fabs(ControlLayer3::instance().loc.getAngle() - angle) < 2);
+  }
+  else {
+    const float angle = -M_PI/2;
+    ControlLayer3::instance().traj.gotoXYA(-130, -180, angle);
+    while(fabs(ControlLayer3::instance().loc.getAngle() - angle) < 2);
+  }
+
   Arm::instance().right().bee();
   delay(1000);
 
-  ControlLayer3::instance().traj.gotoXYA(130, -180, -M_PI/2);
-
+  if(Side::get() == Side::ORANGE) {
+    const float angle = -M_PI/2;
+    ControlLayer3::instance().traj.gotoXYA(130, -180, angle);
+    while(fabs(ControlLayer3::instance().loc.getAngle() - angle) < 2);
+  }
+  else {
+    const float angle = 3*M_PI;
+    ControlLayer3::instance().traj.gotoXYA(-130, -180, angle);
+    while(fabs(ControlLayer3::instance().loc.getAngle() - angle) < 2);
+  }
 
   PositioningAction pos_act;
   pos_act.config.pos.x = 100;

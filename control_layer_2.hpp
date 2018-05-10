@@ -6,6 +6,8 @@
 #include "odometer.hpp"
 #include "differential.hpp"
 
+#include "secure_linear.hpp"
+
 class ControlLayer2 : public Singleton<ControlLayer2> {
 
   static constexpr float ROBOT_CS_FREQ = 100;
@@ -17,8 +19,7 @@ public:
   PIDFilter pid_a;
 
   ControlSystem angle;
-
-  Differential::Linear& speed = diff.getLinearActuator();
+  SecureLinear speed;
 
   int init(void) {
     odo.encoder_left = &ControlLayer0::instance().enc_l;
@@ -41,6 +42,11 @@ public:
     angle.setActuator(& diff.getAngularActuator());
     angle.setErrorFilter(&pid_a);
     angle.init();
+
+    speed.config.freq = 10;
+    speed.config.gp2_limit = 400;
+    speed.diff = & diff;
+    speed.init();
 
     return 0;
   }
