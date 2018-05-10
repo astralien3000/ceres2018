@@ -55,7 +55,11 @@ public:
       Serial.print(" ");
       Serial.print(spe);
       Serial.print(" ");
+      Serial.print(config.duration);
+      Serial.print(" ");
       Serial.print(_counter);
+      Serial.print(" ");
+      if(locked()) Serial.print("LOCKED");
       Serial.println("");
       */
 

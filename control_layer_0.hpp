@@ -53,17 +53,17 @@ public:
 
     smot_l.motor = &mot_l;
     smot_l.encoder = &enc_l;
-    smot_l.config.duration = 0.5;
+    smot_l.config.duration = 2;
     smot_l.config.freq = SMOT_FREQ;
-    smot_l.config.max_speed = 1;
+    smot_l.config.max_speed = 2;
     smot_l.config.min_cmd = 0.2;
     smot_l.init();
 
     smot_r.motor = &mot_r;
     smot_r.encoder = &enc_r;
-    smot_r.config.duration = 0.5;
+    smot_r.config.duration = 2;
     smot_r.config.freq = SMOT_FREQ;
-    smot_r.config.max_speed = 1;
+    smot_r.config.max_speed = 2;
     smot_r.config.min_cmd = 0.2;
     smot_r.init();
 

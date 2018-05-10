@@ -14,8 +14,10 @@
 //constexpr int GP2_LIMIT = 500;
 constexpr int GP2_LIMIT = 300;
 
+Side::Color match_side = Side::ORANGE;
+
 inline void gotoXYSymOrange(float x, float y) {
-  if(Side::get() == Side::ORANGE) {
+  if(match_side == Side::ORANGE) {
     ControlLayer3::instance().traj.gotoXY(x, y);
   }
   else {
@@ -25,7 +27,7 @@ inline void gotoXYSymOrange(float x, float y) {
 }
 
 inline void gotoXYSymOrangeSkate(float x, float y) {
-  if(Side::get() == Side::ORANGE) {
+  if(match_side == Side::ORANGE) {
     ControlLayer3::instance().traj.gotoXY(x, y);
   }
   else {
@@ -35,8 +37,23 @@ inline void gotoXYSymOrangeSkate(float x, float y) {
   SecureMotor::locked() = false;
 }
 
+inline void gotoXYSymOrangeSkateTimeout(float x, float y) {
+  if(match_side == Side::ORANGE) {
+    ControlLayer3::instance().traj.gotoXY(x, y);
+  }
+  else {
+    ControlLayer3::instance().traj.gotoXY(-x, y);
+  }
+
+  int counter = 0;
+  while(!ControlLayer3::instance().traj.isArrived() && !SecureMotor::locked() && counter++ < 500) {
+    delay(10);
+  }
+  SecureMotor::locked() = false;
+}
+
 inline void gotoXYSymOrangeUnsecure(float x, float y) {
-  if(Side::get() == Side::ORANGE) {
+  if(match_side == Side::ORANGE) {
     ControlLayer3::instance().traj.gotoXY(x, y);
   }
   else {
@@ -51,7 +68,7 @@ inline void gotoXYSymOrangeUnsecure(float x, float y) {
 inline void gotoAngleSide(float angle_orange, float angle_green) {
   float x = ControlLayer3::instance().loc.getX();
   float y = ControlLayer3::instance().loc.getY();
-  if(Side::get() == Side::ORANGE) {
+  if(match_side == Side::ORANGE) {
     const float angle = angle_orange;
     ControlLayer3::instance().traj.gotoXYA(x, y, angle);
     while(fabs(ControlLayer3::instance().loc.getAngle() - angle) > 0.1);
@@ -92,19 +109,21 @@ int main(void) {
 
   // init
   if(Side::get() == Side::ORANGE) {
+    match_side = Side::ORANGE;
     ControlLayer3::instance().loc.reset(130, -20, M_PI);
     ControlLayer3::instance().traj.gotoXYA(130, -20, M_PI);
   }
   else {
+    match_side = Side::GREEN;
     ControlLayer3::instance().loc.reset(-130, -20, 0);
     ControlLayer3::instance().traj.gotoXYA(-130, -20, 0);
   }
 
   delay(500);
 
-  Arm::instance().left().safe();
-  Arm::instance().right().safe();
-  delay(500);
+  //Arm::instance().left().safe();
+  //Arm::instance().right().safe();
+  //delay(500);
 
   Arm::instance().left().retract();
   Arm::instance().right().retract();
@@ -113,12 +132,13 @@ int main(void) {
   while(!Pull::isPresent());
   delay(500);
 
-  if(Side::get() == Side::ORANGE) {
+  if(match_side == Side::ORANGE) {
     PositioningAction act;
     act.config.pos.x = 150 - 60;
     act.config.pos.y = -20;
     act.config.dir.x = 60 - PositioningAction::ROBOT_BORDER_LENGTH;
     act.config.dir.y = 20 - PositioningAction::ROBOT_BORDER_LENGTH;
+    act.config.timeout_ms = 5000;
     act.init();
     while(act.getState() != PositioningAction::FINISH) {
       act.update();
@@ -130,6 +150,7 @@ int main(void) {
     act.config.pos.y = -20;
     act.config.dir.x = -60 + PositioningAction::ROBOT_BORDER_LENGTH;
     act.config.dir.y =  20 - PositioningAction::ROBOT_BORDER_LENGTH;
+    act.config.timeout_ms = 5000;
     act.init();
     while(act.getState() != PositioningAction::FINISH) {
       act.update();
@@ -142,7 +163,7 @@ int main(void) {
 
   while(Pull::isPresent());
   match.started = true;
-  //delay(1000);
+  delay(1000);
 
   // pannel
   gotoXYSymOrange(187-150, -50);
@@ -155,7 +176,7 @@ int main(void) {
   gotoAngleSide(M_PI/2, M_PI/2);
 
   ControlLayer2::instance().speed.disableDetection();
-  gotoXYSymOrangeSkate(187-150, 10);
+  gotoXYSymOrangeSkateTimeout(187-150, 10);
   ControlLayer2::instance().speed.enableDetection();
 
   gotoXYSymOrangeUnsecure(187-150, -50);
@@ -169,9 +190,34 @@ int main(void) {
   delay(500);
 
   // bee
+  if(match_side == Side::ORANGE) {
+    PositioningAction act;
+    act.config.pos.x =  120;
+    act.config.pos.y = -170;
+    act.config.dir.x =  30 - PositioningAction::ROBOT_BORDER_LENGTH;
+    act.config.dir.y = -30 - PositioningAction::ROBOT_BORDER_LENGTH;
+    act.config.timeout_ms = 5000;
+    act.init();
+    while(act.getState() != PositioningAction::FINISH) {
+      act.update();
+    }
+  }
+  else {
+    PositioningAction act;
+    act.config.pos.x = -120;
+    act.config.pos.y = -170;
+    act.config.dir.x = -30 + PositioningAction::ROBOT_BORDER_LENGTH;
+    act.config.dir.y = -30 - PositioningAction::ROBOT_BORDER_LENGTH;
+    act.config.timeout_ms = 5000;
+    act.init();
+    while(act.getState() != PositioningAction::FINISH) {
+      act.update();
+    }
+  }
+
   gotoXYSymOrange(130,-180);
 
-  gotoAngleSide(-M_PI/2, -M_PI/2);
+  gotoAngleSide(M_PI/2, -M_PI/2);
 
   Arm::instance().right().safe();
   delay(500);
@@ -179,7 +225,7 @@ int main(void) {
   Arm::instance().right().bee();
   delay(500);
 
-  gotoAngleSide(-M_PI/2, 3*M_PI);
+  gotoAngleSide(-M_PI/2, M_PI/2);
 
   Arm::instance().right().safe();
   delay(500);
