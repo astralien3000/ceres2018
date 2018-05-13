@@ -80,13 +80,13 @@ inline void gotoAngleSide(float angle_orange, float angle_green) {
     Serial.println("ORANGE ANGLE");
     const float angle = angle_orange;
     ControlLayer3::instance().traj.gotoXYA(x, y, angle);
-    while(fabs(ControlLayer3::instance().loc.getAngle() - angle) > 0.1);
+    while(fabs(ControlLayer3::instance().loc.getAngle() - angle) > PositioningAction::ANGLE_DELTA);
   }
   else {
     Serial.println("GREEN ANGLE");
     const float angle = angle_green;
     ControlLayer3::instance().traj.gotoXYA(x, y, angle);
-    while(fabs(ControlLayer3::instance().loc.getAngle() - angle) > 0.1);
+    while(fabs(ControlLayer3::instance().loc.getAngle() - angle) > PositioningAction::ANGLE_DELTA);
   }
 }
 
@@ -113,6 +113,75 @@ int main(void) {
   Pull::init();
   Side::init();
   GP2::init();
+
+  /*
+  ControlLayer1::instance().cmot_l.set(20);
+  ControlLayer1::instance().cmot_r.set(20);
+
+  while(1) {
+    Serial.print(ControlLayer0::instance().enc_l.getDistance());
+    Serial.print(" ");
+    Serial.print(ControlLayer0::instance().enc_l.getSpeed());
+    Serial.print(" ");
+    Serial.print(ControlLayer1::instance().cmot_l.setpoint);
+    Serial.print(" ");
+    Serial.print(ControlLayer1::instance().cmot_l.error);
+    Serial.print(" ");
+    Serial.print(ControlLayer1::instance().cmot_l.output);
+    Serial.print(" ");
+    Serial.println("");
+    delay(100);
+  }
+  */
+
+  /*
+  ControlLayer2::instance().dist.set(40);
+  //ControlLayer2::instance().angle.set(M_PI/2);
+
+  while(1) {
+    Serial.print("DIST ");
+    Serial.print(ControlLayer2::instance().odo.getDistance());
+    Serial.print(" ");
+    Serial.print(ControlLayer2::instance().odo.getLinearSpeed());
+    Serial.print(" ");
+    Serial.print(ControlLayer2::instance().dist.setpoint);
+    Serial.print(" ");
+    Serial.print(ControlLayer2::instance().dist.error);
+    Serial.print(" ");
+    Serial.print(ControlLayer2::instance().dist.output);
+    Serial.print(" ");
+    Serial.print("ANGLE ");
+    Serial.print(ControlLayer2::instance().odo.getAngle());
+    Serial.print(" ");
+    Serial.print(ControlLayer2::instance().odo.getAngularSpeed());
+    Serial.print(" ");
+    Serial.print(ControlLayer2::instance().angle.setpoint);
+    Serial.print(" ");
+    Serial.print(ControlLayer2::instance().angle.error);
+    Serial.print(" ");
+    Serial.print(ControlLayer2::instance().angle.output);
+    Serial.print(" ");
+    Serial.println("");
+    delay(100);
+  }
+  */
+
+  /*
+  ControlLayer3::instance().traj.gotoXY(10,0);
+
+  while(1) {
+    Serial.print(ControlLayer3::instance().loc.getX());
+    Serial.print(" ");
+    Serial.print(ControlLayer3::instance().loc.getY());
+    Serial.print(" ");
+    Serial.print(ControlLayer3::instance().traj.cmd_x);
+    Serial.print(" ");
+    Serial.print(ControlLayer3::instance().traj.cmd_y);
+    Serial.print(" ");
+    Serial.println("");
+    delay(100);
+  }
+  */
 
   MatchLimit match;
   Scheduler::instance().add(10, &match);
@@ -180,6 +249,8 @@ int main(void) {
   delay(1000);
 
   // pannel
+  gotoXYSymOrange(187-150, -20);
+
   gotoXYSymOrange(187-150, -50);
 
   gotoAngleSide(M_PI/2, M_PI/2);
@@ -231,7 +302,7 @@ int main(void) {
     }
   }
 
-  gotoXYSymOrange(130,-180);
+  gotoXYSymOrange(131,-181);
 
   gotoAngleSide(M_PI/2, -M_PI/2);
 

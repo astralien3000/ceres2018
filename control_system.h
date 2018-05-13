@@ -36,7 +36,11 @@ private:
   void * actuator;
   set_t actuator_set;
 
-  float cmd;
+public:
+  float setpoint;
+  float feedback;
+  float error;
+  float output;
 
 public:
   ControlSystem(void) {
@@ -85,29 +89,31 @@ public:
 
   void update(void) {
     if(sensor_get && actuator_set) {
-      float feedback = sensor_get(sensor);
-      float command = cmd;
+      feedback = sensor_get(sensor);
 
+      float filtered_feedback = feedback;
       if(feedback_filter_eval) {
-        feedback = feedback_filter_eval(feedback_filter, feedback);
+        filtered_feedback = feedback_filter_eval(feedback_filter, feedback);
       }
 
+      float filtered_setpoint = setpoint;
       if(setpoint_filter_eval) {
-        command = setpoint_filter_eval(setpoint_filter, command);
+        filtered_setpoint = setpoint_filter_eval(setpoint_filter, setpoint);
       }
 
-      float error = feedback - command;
+      error = filtered_setpoint - filtered_feedback;
 
+      output = error;
       if(error_filter_eval) {
-        error = error_filter_eval(error_filter, error);
+        output = error_filter_eval(error_filter, error);
       }
 
-      actuator_set(actuator, error);
+      actuator_set(actuator, output);
     }
   }
 
   int init(void) {
-    cmd = 0;
+    setpoint = 0;
 
     Scheduler::instance().add(config.freq, this);
 
@@ -115,7 +121,7 @@ public:
   }
 
   void set(float val) {
-    cmd = val;
+    setpoint = val;
   }
 };
 

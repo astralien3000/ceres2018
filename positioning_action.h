@@ -6,6 +6,7 @@
 class PositioningAction {
 public:
   static constexpr float ROBOT_BORDER_LENGTH = 18.2/2.0;
+  static constexpr float ANGLE_DELTA = 0.3;
 
   typedef enum {
     START,
@@ -48,7 +49,7 @@ public:
     if(state == START) {
       const float angle  = 0;
       ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y, angle);
-      if(ControlLayer3::instance().traj.isArrived() && fabs(ControlLayer3::instance().loc.getAngle() - angle) > 0.1) {
+      if(ControlLayer3::instance().traj.isArrived() && fabs(ControlLayer3::instance().loc.getAngle() - angle) < ANGLE_DELTA) {
         state = RUN;
         internal = 0;
         time = millis();
@@ -60,7 +61,7 @@ public:
         if(config.dir.x == 0) {
           internal = 2;
         }
-        ControlLayer3::instance().traj.gotoXYA(config.pos.x + config.dir.x * 2, config.pos.y, 0);
+        ControlLayer3::instance().traj.gotoXY(config.pos.x + config.dir.x * 2, config.pos.y);
         if(SecureMotor::locked()) {
           internal = 1;
           ControlLayer3::instance().loc.reset(config.pos.x + config.dir.x, ControlLayer3::instance().loc.getY(), 0);
@@ -73,7 +74,7 @@ public:
       else if(internal == 1) {
         const float angle = M_PI/2;
         ControlLayer3::instance().traj.gotoXYA(config.pos.x, config.pos.y, angle);
-        if(ControlLayer3::instance().traj.isArrived() && fabs(ControlLayer3::instance().loc.getAngle() - angle) > 0.1) {
+        if(ControlLayer3::instance().traj.isArrived() && fabs(ControlLayer3::instance().loc.getAngle() - angle) < ANGLE_DELTA) {
           internal = 2;
           time = millis();
         }
@@ -107,7 +108,6 @@ public:
         }
       }
     }
-    Serial.println((int)internal);
   }
 
 };

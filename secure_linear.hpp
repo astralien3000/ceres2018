@@ -10,6 +10,7 @@ public:
   struct Config {
     uint32_t freq;
     uint32_t gp2_limit;
+    float max;
   };
 
   Config config;
@@ -59,7 +60,7 @@ public:
       diff->setLinear(0);
     }
     else {
-      diff->setLinear(cmd);
+      diff->setLinear(cmd < config.max ? cmd : config.max);
     }
   }
 

@@ -19,15 +19,15 @@ public:
   ControlSystem cmot_r;
 
   int init(void) {
-    pid_l.config.kp = 0.12;
-    pid_l.config.ki = 0.04;
-    pid_l.config.kd = 0.04;
+    pid_l.config.kp = 0.04;
+    pid_l.config.ki = 0.00;
+    pid_l.config.kd = 0.00;
     pid_l.config.freq = MOT_CS_FREQ;
     pid_l.init();
 
-    pid_r.config.kp = 0.1;
-    pid_r.config.ki = 0.04;
-    pid_r.config.kd = 0.04;
+    pid_r.config.kp = 0.04;
+    pid_r.config.ki = 0.00;
+    pid_r.config.kd = 0.00;
     pid_r.config.freq = MOT_CS_FREQ;
     pid_r.init();
 

@@ -60,7 +60,7 @@ static uint16_t _right_poses[MAX_POSES][ARM_SERVO_NUMOF] = {
   {512, 512, 600, 270, 150}, // DEPLOYED_MIDDLE
   {512, 512, 100, 700, 150}, // DEPLOYED_DOWN
   {512, 900, 500, 400, 512}, // BEE
-  {100, 900, 380, 400, 380}, // PANNEL
+  {100, 900, 370, 400, 370}, // PANNEL
 };
 
 static float _left_angles[ARM_SERVO_NUMOF] = { 0,0,0,0,0 };

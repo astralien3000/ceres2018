@@ -18,10 +18,10 @@ public:
     loc.init();
 
     traj.config.freq = 10;
-    traj.config.speed = 20;
     traj.loc = & loc;
+    traj.odo = & ControlLayer2::instance().odo;
     traj.setAngle(& ControlLayer2::instance().angle);
-    traj.setLinearSpeed(& ControlLayer2::instance().speed);
+    traj.setLinearSpeed(& ControlLayer2::instance().dist);
     traj.init();
 
     return 0;

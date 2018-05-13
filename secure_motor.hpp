@@ -64,7 +64,7 @@ public:
       */
 
       if(_counter >= config.duration) {
-        locked() = true;
+        //locked() = true;
       }
     }
 

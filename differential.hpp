@@ -4,6 +4,14 @@
 #include "motor.hpp"
 
 class Differential {
+public:
+  struct Config {
+    float max_angular;
+    float max_linear;
+  };
+
+  Config config;
+
 private:
   typedef void (*set_t)(void*,float);
 
@@ -40,17 +48,33 @@ public:
   }
 
   void update(void) {
-    left_motor_set(left_motor, (int)(linear + angular));
-    right_motor_set(right_motor, (int)(linear - angular));
+    left_motor_set(left_motor, (int)(linear - angular));
+    right_motor_set(right_motor, (int)(linear + angular));
   }
 
   void setLinear(float cmd) {
-    linear = cmd;
+    if(fabs(cmd) < config.max_linear) {
+      linear = cmd;
+    }
+    else if(cmd > 0) {
+      linear = config.max_linear;
+    }
+    else {
+      linear = -config.max_linear;
+    }
     update();
   }
 
   void setAngular(float cmd) {
-    angular = cmd;
+    if(fabs(cmd) < config.max_angular) {
+      angular = cmd;
+    }
+    else if(cmd > 0) {
+      angular = config.max_angular;
+    }
+    else {
+      angular = -config.max_angular;
+    }
     update();
   }
 

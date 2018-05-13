@@ -17,32 +17,36 @@ public:
 
   struct Config {
     uint32_t freq;
-    float speed;
   };
 
   Config config;
 
   Locator * loc;
+  Odometer * odo;
 
 private:
-  void * linear_speed;
-  set_t linear_speed_set;
+  void * linear;
+  set_t linear_set;
 
   void * angle;
   set_t angle_set;
 
-  float cmd_x;
-  float cmd_y;
-  float cmd_a;
   bool enable_cmd_a;
   bool arrived;
   Way way;
 
 public:
+  float cmd_x;
+  float cmd_y;
+  float cmd_a;
+
+  float delta;
+
+public:
   template<class LinearSpeed>
   void setLinearSpeed(LinearSpeed * dev) {
-    linear_speed = (void*)dev;
-    linear_speed_set = [](void * arg, float val) { ((LinearSpeed*)arg)->set(val); };
+    linear = (void*)dev;
+    linear_set = [](void * arg, float val) { ((LinearSpeed*)arg)->set(val); };
   }
 
   template<class Angle>
@@ -52,13 +56,13 @@ public:
   }
 
   void update(void) {
-    float dx = cmd_x - loc->getX();
-    float dy = cmd_y - loc->getY();
+    const float dx = cmd_x - loc->getX();
+    const float dy = cmd_y - loc->getY();
+    const float dist = sqrt(dx*dx + dy*dy);
 
-    arrived = fabs(dx) < 0.5 && fabs(dy) < 0.5;
+    arrived = dist < delta;
     if(arrived) {
       way = NONE;
-      linear_speed_set(linear_speed, 0);
       cmd_x = loc->getX();
       cmd_y = loc->getY();
       if(enable_cmd_a) {
@@ -73,32 +77,32 @@ public:
     if(amod < -M_PI) amod += 2 * M_PI;
     if(amod > M_PI)  amod -= 2 * M_PI;
     float adiv = a - amod;
-    float speed_mul = config.speed;
+    float way_mul = 1;
     way = FORWARD;
     //DEBUG("(%f;%f)=>(%f;%f;%f)\n",a,amod, cmd_a-M_PI, cmd_a, cmd_a+M_PI);
 
     if(amod < cmd_a) {
       if(fabs(cmd_a-amod) > fabs(cmd_a - M_PI - amod)) {
         cmd_a -= M_PI;
-        speed_mul *= -1;
+        way_mul *= -1;
         way = BACKWARD;
       }
     }
     else {
       if(fabs(cmd_a-amod) > fabs(cmd_a + M_PI - amod)) {
         cmd_a += M_PI;
-        speed_mul *= -1;
+        way_mul *= -1;
         way = BACKWARD;
       }
     }
     //DEBUG("%f\n", cmd_a);
 
-    if(fabs(cmd_a-amod) > 4*M_PI/180.0) {
-      speed_mul = 0;
+    if(fabs(cmd_a-amod) > 0.2) {
+      way_mul = 0;
     }
 
     angle_set(angle, cmd_a+adiv);
-    linear_speed_set(linear_speed, speed_mul);
+    linear_set(linear, odo->getDistance() + dist * way_mul);
   }
 
   int init() {
@@ -106,6 +110,7 @@ public:
     cmd_y = loc->getY();
     arrived = false;
     enable_cmd_a = false;
+    delta = 1;
 
     Scheduler::instance().add(config.freq, this);
 

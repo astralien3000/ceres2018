@@ -11,7 +11,7 @@
 class ControlLayer0 : public Singleton<ControlLayer0> {
 
 public:
-  static constexpr uint32_t MOT_MAX = Motor::MAX / 4;
+  static constexpr uint32_t MOT_MAX = Motor::MAX / 2;
   static constexpr uint32_t ENC_FREQ = 400;
   static constexpr uint32_t SMOT_FREQ = 20;
 
@@ -27,14 +27,14 @@ public:
   int init(void) {
     mot_l.config.max = MOT_MAX;
     mot_l.config.pwm_pin = 22;
-    mot_l.config.pos_pin = 24;
-    mot_l.config.neg_pin = 33;
+    mot_l.config.pos_pin = 33;
+    mot_l.config.neg_pin = 24;
     mot_l.init();
 
     mot_r.config.max = MOT_MAX;
     mot_r.config.pwm_pin = 23;
-    mot_r.config.pos_pin = 31;
-    mot_r.config.neg_pin = 26;
+    mot_r.config.pos_pin = 26;
+    mot_r.config.neg_pin = 31;
     mot_r.init();
 
     enc_l.config.qdec = 1;
